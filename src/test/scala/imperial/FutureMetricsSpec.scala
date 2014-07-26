@@ -16,51 +16,49 @@
 
 package imperial
 
-import com.codahale.{metrics => ch}
 import imperial.mocks.{MockMetricBuilder, MockTimer}
 import org.junit.runner.RunWith
-import org.mockito.Mockito.verify
 import org.scalatest.Matchers._
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.mock.MockitoSugar._
 
 import scala.concurrent.{Await, ExecutionContext, Promise}
 import scala.concurrent.duration._
 
 @RunWith(classOf[JUnitRunner])
-class FutureMetricsSpec extends FunSpec with OneInstancePerTest with FutureMetrics with InstrumentedBuilder {
-
-  val metricRegistry = null
-  override def metrics = new MockMetricBuilder
+class FutureMetricsSpec extends FlatSpec {
 
   implicit def sameThreadEc: ExecutionContext = new ExecutionContext {
     def execute(runnable: Runnable): Unit = runnable.run
     def reportFailure(t: Throwable): Unit = throw t
   }
 
-  describe("A future timer") {
-    it("should time an execution") {
-      val f = timed("test") {
-        Thread.sleep(10L)
-        10
-      }
-      val result = Await.result(f, 300.millis)
-      assert(metrics.timer("test").count === 1)
-      result should be (10)
-    }
-
-    it("should attach an onComplete listener") {
-      val p = Promise[String]()
-      val f = timing("test") {
-        p.future
-      }
-      p.success("test")
-      val result = Await.result(f, 50.millis)
-      result should be ("test")
-      assert(metrics.timer("test").count === 1)
-//      verify(mockTimerContext).stop()
-    }
+  trait WithMockMetrics extends FutureMetrics with InstrumentedBuilder {
+    val metricRegistry = null
+    override val metrics = new MockMetricBuilder
   }
+
+  "A future timer" should "time an execution" in new WithMockMetrics {
+    val f = timed("test") {
+      Thread.sleep(10L)
+      10
+    }
+    val result = Await.result(f, 300.millis)
+    assert(metrics.timer("test").count === 1)
+    result should be (10)
+  }
+
+  it should "attach an onComplete listener" in new WithMockMetrics {
+    val p = Promise[String]()
+    val f = timing("test") {
+      p.future
+    }
+    p.success("test")
+    val result = Await.result(f, 50.millis)
+    result should be ("test")
+    assert(metrics.timer("test").count === 1)
+//      verify(mockTimerContext).stop()
+  }
+
 
 }
