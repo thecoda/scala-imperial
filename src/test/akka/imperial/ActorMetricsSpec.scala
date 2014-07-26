@@ -49,10 +49,6 @@ object TestFixture {
 //    val fixture: Fixture
 
     val metricRegistry = null
-
-    var counterName: String = null
-
-
     def builder: MetricBuilder
     override def metrics = builder
   }
@@ -137,10 +133,8 @@ class ActorMetricsSpec extends FunSpec {
       val receiveCounter = ref.underlyingActor.counter
 
       assert(receiveTimer.count === 1)
-      assert(receiveExceptionMeter.count === 1)
-      assert(receiveCounter.count === 0)
-
-      ref.underlyingActor.counterName should equal ("nl.grons.metrics.scala.TestFixture.ComposedActor.receiveCounter")
+      assert(receiveExceptionMeter.count === 0)
+      assert(receiveCounter.count === 1)
     }
   }
 
