@@ -17,40 +17,18 @@
 package imperial
 
 import akka.actor.{Actor, ActorSystem}
-import imperial.Meter.ExceptionMarkerPf
 import imperial.mocks.MockMetricBuilder
 import org.junit.runner.RunWith
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{when, verify, never}
-import org.scalatest.FunSpec
+import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.mock.MockitoSugar._
 
 object TestFixture {
 
-//  class Fixture  {
-//    val mockCounter = mock[Counter]
-//    val mockTimer = mock[Timer]
-//    val mockTimerContext = mock[TimerContext]
-//    val mockMeter = mock[Meter]
-//
-//    val pf: PartialFunction[Any,Unit] = {
-//      case _ =>
-//    }
-//
-//    when(mockTimer.timerContext()).thenReturn(mockTimerContext)
-//    when(mockCounter.count(any[PartialFunction[Any,Unit]])).thenReturn(pf)
-//    when(mockTimer.timePF(any[PartialFunction[Any,Unit]])).thenReturn(pf)
-//    when(mockMeter.exceptionMarkerPF).thenReturn(new ExceptionMarkerPf(mockMeter))
-//  }
-
   trait MetricRegistryFixture extends InstrumentedBuilder {
-//    val fixture: Fixture
-
     val metricRegistry = null
     def builder: MetricBuilder
-    override def metrics = builder
+    override def metrics: MetricBuilder = builder
   }
 
   class TestActor(val builder: MetricBuilder) extends Actor with MetricRegistryFixture {
@@ -80,62 +58,52 @@ object TestFixture {
 }
 
 @RunWith(classOf[JUnitRunner])
-class ActorMetricsSpec extends FunSpec {
+class ActorMetricsSpec extends FlatSpec {
   import akka.testkit.TestActorRef
   import TestFixture._
 
   implicit val system = ActorSystem()
 
-  describe("A counter actor") {
-    it("increments counter on new messages") {
-      val builder = new MockMetricBuilder
-      val ref = TestActorRef(new CounterTestActor(builder))
+  "A counter actor" should "increments counter on new messages" in {
+    val builder = new MockMetricBuilder
+    val ref = TestActorRef(new CounterTestActor(builder))
 
-      ref.underlyingActor.receive should not be (null)
-      ref ! "test"
-      assert(builder.counter("receiveCounter").count === 1)
-//      verify(fixture.mockCounter).count(any[PartialFunction[Any,Unit]])
-//      ref.underlyingActor.counterName should equal ("receiveCounter")
-    }
+    ref.underlyingActor.receive should not be (null)
+    ref ! "test"
+    assert(builder.counter("receiveCounter").count === 1)
   }
 
-  describe("A timer actor") {
-    it("times a message processing") {
-      val builder = new MockMetricBuilder
-      val ref = TestActorRef(new TimerTestActor(builder))
-      ref ! "test"
-      println(builder.describe)
+  "A timer actor" should "time a message processing" in {
+    val builder = new MockMetricBuilder
+    val ref = TestActorRef(new TimerTestActor(builder))
+    ref ! "test"
+    println(builder.describe)
 //      val receiveTimer = ref.underlyingActor.timer
-      val receiveTimer = builder.timer("imperial.TestFixture.TimerTestActor.receiveTimer")
-      assert(receiveTimer.count === 1)
-    }
+    val receiveTimer = builder.timer("imperial.TestFixture.TimerTestActor.receiveTimer")
+    assert(receiveTimer.count === 1)
   }
 
-  describe("A exception meter actor") {
-    it("meters thrown exceptions") {
-      val builder = new MockMetricBuilder
-      val ref = TestActorRef(new ExceptionMeterTestActor(builder))
-      intercept[RuntimeException] { ref.receive("test") }
+  "A exception meter actor" should "meter thrown exceptions" in {
+    val builder = new MockMetricBuilder
+    val ref = TestActorRef(new ExceptionMeterTestActor(builder))
+    intercept[RuntimeException] { ref.receive("test") }
 
-      val receiveExceptionMeter = ref.underlyingActor.meter
-      assert(receiveExceptionMeter.count === 1)
-    }
+    val receiveExceptionMeter = ref.underlyingActor.meter
+    assert(receiveExceptionMeter.count === 1)
   }
 
-  describe("A composed actor") {
-    it("counts and times processing of messages") {
-      val builder = new MockMetricBuilder
-      val ref = TestActorRef(new ComposedActor(builder))
-      ref ! "test"
+  "A composed actor" should "count and time processing of messages" in {
+    val builder = new MockMetricBuilder
+    val ref = TestActorRef(new ComposedActor(builder))
+    ref ! "test"
 
-      val receiveTimer = ref.underlyingActor.timer
-      val receiveExceptionMeter = ref.underlyingActor.meter
-      val receiveCounter = ref.underlyingActor.counter
+    val receiveTimer = ref.underlyingActor.timer
+    val receiveExceptionMeter = ref.underlyingActor.meter
+    val receiveCounter = ref.underlyingActor.counter
 
-      assert(receiveTimer.count === 1)
-      assert(receiveExceptionMeter.count === 0)
-      assert(receiveCounter.count === 1)
-    }
+    assert(receiveTimer.count === 1)
+    assert(receiveExceptionMeter.count === 0)
+    assert(receiveCounter.count === 1)
   }
 
 }
