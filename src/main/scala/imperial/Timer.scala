@@ -22,6 +22,17 @@ import com.codahale.{metrics => ch}
 
 object Timer {
   def apply(raw: ch.Timer): Timer = new TimerWrapper(raw)
+//  type Context = ch.Timer.Context
+}
+
+trait TimerContext {
+  /** Stops recording the elapsed time, updates the timer and returns the elapsed time in nanoseconds. */
+  def stop(): Long
+  def close(): Long = stop()
+}
+
+class TimerContextWrapper(val raw: ch.Timer.Context) extends TimerContext {
+  def stop(): Long = raw.stop()
 }
 
 /**
@@ -41,7 +52,10 @@ object Timer {
 trait Timer {
 
   /** Runs f, recording its duration, and returns its result. */
-  def time[A](f: => A): A
+  def time[A](f: => A): A = {
+    val ctx = timerContext()
+    try { f } finally { ctx.stop() }
+  }
 
   /**
    * Converts partial function `pf` into a side-effecting partial function that times
@@ -62,7 +76,19 @@ trait Timer {
    *  }
    * }}}
    */
-   def timePF[A,B](pf: PartialFunction[A,B]): PartialFunction[A,B]
+  def timePF[A,B](pf: PartialFunction[A,B]): PartialFunction[A,B] =
+    new PartialFunction[A,B] {
+      def apply(a: A): B = {
+        val ctx = timerContext()
+        try {
+          pf.apply(a)
+        } finally {
+          ctx.stop()
+        }
+      }
+
+      def isDefinedAt(a: A) = pf.isDefinedAt(a)
+    }
 
   /** Adds a recorded duration. */
   def update(duration: Long, unit: TimeUnit): Unit
@@ -104,32 +130,10 @@ trait Timer {
 
 class TimerWrapper(val raw: ch.Timer) extends Timer{
 
-  def time[A](f: => A): A = {
-    val ctx = raw.time
-    try {
-      f
-    } finally {
-      ctx.stop
-    }
-  }
-
-  def timePF[A,B](pf: PartialFunction[A,B]): PartialFunction[A,B] =
-    new PartialFunction[A,B] {
-      def apply(a: A): B = {
-        val ctx = timerContext()
-        try {
-          pf.apply(a)
-        } finally {
-          ctx.stop()
-        }
-      }
-
-      def isDefinedAt(a: A) = pf.isDefinedAt(a)
-    }
 
   def update(duration: Long, unit: TimeUnit): Unit = raw.update(duration, unit)
 
-  def timerContext(): TimerContext = raw.time()
+  def timerContext(): TimerContext = new TimerContextWrapper(raw.time())
 
   def count: Long = raw.getCount
 

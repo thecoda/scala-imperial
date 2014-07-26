@@ -36,7 +36,7 @@ class MetricBuilderSpec extends FunSpec with OneInstancePerTest {
     val gauge: Gauge[Int] = metrics.gauge("the answer")(value)
     val counter: Counter = metrics.counter("1..2..3..4")
     val histogram: Histogram = metrics.histogram("histo")
-    val meter: Meter = metrics.meter("meter", "testscope")
+    val meter: Meter = metrics.meter("meter.testscope")
 
     def waitFor100Ms() {
       timer.time {

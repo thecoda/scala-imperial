@@ -1,21 +1,42 @@
 package imperial
 package mocks
 
-import scala.concurrent.duration._
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.TimeUnit
 
+class MockTimerContext(timer: Timer) extends TimerContext {
+  val start = System.nanoTime()
+  override def stop(): Long = {
+    val elapsed = System.nanoTime() - start
+    timer.update(elapsed, TimeUnit.NANOSECONDS)
+    elapsed
+  }
+}
 class MockTimer extends Timer {
-  def time[A](action: => A): A = ???
-  def timerContext: TimerContext = ???
-  def timePF[A, B](pf: PartialFunction[A, B]): PartialFunction[A, B] = ???
-  def count: Long = ???
+  def timerContext: TimerContext = new MockTimerContext(this)
+
+  def update(duration: Long, unit: TimeUnit): Unit = {
+    updateNanos(unit.toNanos(duration))
+  }
+
+  private def updateNanos(duration: Long) {
+    if (duration >= 0) {
+      max = math.max(duration, max)
+      min = math.min(duration, min)
+      count += 1
+    }
+  }
+
+  var count: Long = 0L
+  var max: Long = 0L
+  var min: Long = 0L
+
   def mean: Double = ???
   def meanRate: Double = ???
-  def update(duration: Long, unit: TimeUnit): Unit = ???
-  def snapshot: Snapshot = ???
-  def max: Long = ???
   def stdDev: Double = ???
   def fiveMinuteRate: Double = ???
-  def min: Long = ???
   def oneMinuteRate: Double = ???
   def fifteenMinuteRate: Double = ???
+
+  def snapshot: Snapshot = ???
 }

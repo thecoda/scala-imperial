@@ -85,7 +85,7 @@ trait Meter {
    *   }
    * }}}
    */
-  def exceptionMarker: Meter.ExceptionMarker
+  def exceptionMarker: Meter.ExceptionMarker = new Meter.ExceptionMarker(this)
 
   /**
    * Converts partial function `pf` into a side-effecting partial function that meters
@@ -108,7 +108,7 @@ trait Meter {
    *  }
    * }}}
    */
-  def exceptionMarkerPF: Meter.ExceptionMarkerPf
+  def exceptionMarkerPF: Meter.ExceptionMarkerPf = new Meter.ExceptionMarkerPf(this)
 
   /** Marks the occurrence of an event. */
   def mark(): Unit
@@ -155,8 +155,6 @@ trait Meter {
 
 
 class MeterWrapper(val raw: ch.Meter) extends Meter {
-  def exceptionMarker = new Meter.ExceptionMarker(this)
-  def exceptionMarkerPF = new Meter.ExceptionMarkerPf(this)
 
   def mark(): Unit = raw.mark()
   def mark(count: Long): Unit = raw mark count

@@ -63,4 +63,6 @@ class MetricName private (val name: String) extends AnyVal {
    */
   def append(names: String*): MetricName =
     new MetricName((name.split('.') ++ names.filter(_ != null)).filter(_.nonEmpty).mkString("."))
+
+  def +(subname: String): MetricName = append(subname)
 }

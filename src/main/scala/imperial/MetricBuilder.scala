@@ -21,45 +21,20 @@ import com.codahale.{metrics => ch}
 /** Builds and registering metrics. */
 trait MetricBuilder {
 
-  /**
-   * Registers a new gauge metric.
-   *
-   * @param name  the name of the gauge
-   * @param scope the scope of the gauge or null for no scope
-   */
-  def gauge[A](name: String, scope: String = null)(f: => A): Gauge[A]
+  /** Registers a new gauge metric. */
+  def gauge[A](name: String)(f: => A): Gauge[A]
 
-  /**
-   * Creates a new counter metric.
-   *
-   * @param name  the name of the counter
-   * @param scope the scope of the counter or null for no scope
-   */
-  def counter(name: String, scope: String = null): Counter
+  /** Creates a new counter metric. */
+  def counter(name: String): Counter
 
-  /**
-   * Creates a new histogram metrics.
-   *
-   * @param name   the name of the histogram
-   * @param scope  the scope of the histogram or null for no scope
-   */
-  def histogram(name: String, scope: String = null): Histogram
+  /** Creates a new histogram metrics. */
+  def histogram(name: String): Histogram
 
-  /**
-   * Creates a new meter metric.
-   *
-   * @param name the name of the meter
-   * @param scope the scope of the meter or null for no scope
-   */
-  def meter(name: String, scope: String = null): Meter
+  /** Creates a new meter metric. */
+  def meter(name: String): Meter
 
-  /**
-   * Creates a new timer metric.
-   *
-   * @param name the name of the timer
-   * @param scope the scope of the timer or null for no scope
-   */
-  def timer(name: String, scope: String = null): Timer
+  /** Creates a new timer metric. */
+  def timer(name: String): Timer
 }
 
 object MetricBuilder {
@@ -69,22 +44,21 @@ object MetricBuilder {
 
 class WrappedMetricBuilder(val baseName: MetricName, val registry: ch.MetricRegistry) extends MetricBuilder {
 
-  private[this] def metricName(name: String, scope: String = null): String =
-    baseName.append(name, scope).name
+  private[this] def metricName(name: String): String = baseName.append(name).name
 
-  def gauge[A](name: String, scope: String = null)(f: => A): Gauge[A] =
-    new GaugeWrapper[A](registry.register(metricName(name, scope), new ch.Gauge[A] { def getValue: A = f }))
+  def gauge[A](name: String)(f: => A): Gauge[A] =
+    new GaugeWrapper[A](registry.register(metricName(name), new ch.Gauge[A] { def getValue: A = f }))
 
-  def counter(name: String, scope: String = null): Counter =
-    new CounterWrapper(registry.counter(metricName(name, scope)))
+  def counter(name: String): Counter =
+    new CounterWrapper(registry.counter(metricName(name)))
 
-  def histogram(name: String, scope: String = null): Histogram =
-    new HistogramWrapper(registry.histogram(metricName(name, scope)))
+  def histogram(name: String): Histogram =
+    new HistogramWrapper(registry.histogram(metricName(name)))
 
-  def meter(name: String, scope: String = null): Meter =
-    new MeterWrapper(registry.meter(metricName(name, scope)))
+  def meter(name: String): Meter =
+    new MeterWrapper(registry.meter(metricName(name)))
 
-  def timer(name: String, scope: String = null): Timer =
-    new TimerWrapper(registry.timer(metricName(name, scope)))
+  def timer(name: String): Timer =
+    new TimerWrapper(registry.timer(metricName(name)))
 
 }

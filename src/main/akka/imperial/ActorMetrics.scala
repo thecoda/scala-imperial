@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package akka.imperial
+package imperial
 
 import akka.actor.Actor
-import imperial._
+import akka.enhancement.PublicAroundReceive
 
 /**
  * Stackable actor trait which counts received messages.
@@ -42,13 +42,13 @@ import imperial._
  * }
  * }}}
  */
-trait ReceiveCounterActor extends Actor { self: InstrumentedBuilder =>
+trait ReceiveCounterActor extends PublicAroundReceive { self: InstrumentedBuilder =>
 
   def receiveCounterName: String = MetricName(getClass).append("receiveCounter").name
   lazy val counter: Counter = metrics.counter(receiveCounterName)
 
-  override protected[akka] def aroundReceive(receive: Actor.Receive, msg: Any): Unit = {
-    super.aroundReceive(receive, msg)
+  override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = {
+    super.publicAroundReceive(receive, msg)
     counter.inc()
   }
 }
@@ -76,13 +76,13 @@ trait ReceiveCounterActor extends Actor { self: InstrumentedBuilder =>
  * }
  * }}}
  */
-trait ReceiveTimerActor extends Actor { self: InstrumentedBuilder =>
+trait ReceiveTimerActor extends PublicAroundReceive { self: InstrumentedBuilder =>
 
   def receiveTimerName: String = MetricName(getClass).append("receiveTimer").name
   lazy val timer: Timer = metrics.timer(receiveTimerName)
 
-  override protected[akka] def aroundReceive(receive: Actor.Receive, msg: Any): Unit = timer.time(
-    super.aroundReceive(receive, msg)
+  override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = timer.time(
+    super.publicAroundReceive(receive, msg)
   )
 }
 
@@ -109,12 +109,12 @@ trait ReceiveTimerActor extends Actor { self: InstrumentedBuilder =>
  * }
  * }}}
  */
-trait ReceiveExceptionMeterActor extends Actor { self: InstrumentedBuilder =>
+trait ReceiveExceptionMeterActor extends PublicAroundReceive { self: InstrumentedBuilder =>
 
   def receiveExceptionMeterName: String = MetricName(getClass).append("receiveExceptionMeter").name
   lazy val meter: Meter = metrics.meter(receiveExceptionMeterName)
 
-  override protected[akka] def aroundReceive(receive: Actor.Receive, msg: Any): Unit = {
-    meter.exceptionMarker(super.aroundReceive(receive, msg))
+  override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = {
+    meter.exceptionMarker(super.publicAroundReceive(receive, msg))
   }
 }

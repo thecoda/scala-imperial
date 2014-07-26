@@ -32,16 +32,7 @@ import scala.concurrent.duration._
 class FutureMetricsSpec extends FunSpec with OneInstancePerTest with FutureMetrics with InstrumentedBuilder {
 
   val metricRegistry = null
-  override def metrics = new MockMetricBuilder {
-    override def timer(name: String, scope: String = null): Timer = mockTimer
-  }
-
-  var timeCalled = false
-  val mockTimer = new MockTimer {
-    override def time[A](action: => A): A = { timeCalled = true; action }
-    override def timerContext = mockTimerContext
-  }
-  val mockTimerContext = mock[TimerContext]
+  override def metrics = new MockMetricBuilder
 
   implicit def sameThreadEc: ExecutionContext = new ExecutionContext {
     def execute(runnable: Runnable): Unit = runnable.run
@@ -55,7 +46,7 @@ class FutureMetricsSpec extends FunSpec with OneInstancePerTest with FutureMetri
         10
       }
       val result = Await.result(f, 300.millis)
-      timeCalled should be (true)
+      assert(metrics.timer("test").count === 1)
       result should be (10)
     }
 
@@ -67,7 +58,8 @@ class FutureMetricsSpec extends FunSpec with OneInstancePerTest with FutureMetri
       p.success("test")
       val result = Await.result(f, 50.millis)
       result should be ("test")
-      verify(mockTimerContext).stop()
+      assert(metrics.timer("test").count === 1)
+//      verify(mockTimerContext).stop()
     }
   }
 

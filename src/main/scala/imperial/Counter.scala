@@ -19,7 +19,7 @@ package imperial
 import com.codahale.{metrics => ch}
 
 object Counter {
-  class CountingPf[A,B](counter: ch.Counter, pf: PartialFunction[A,B]) extends PartialFunction[A,B] {
+  class CountingPf[A,B](counter: Counter, pf: PartialFunction[A,B]) extends PartialFunction[A,B] {
     def apply(a: A): B = {
       counter.inc(1)
       pf.apply(a)
@@ -56,7 +56,7 @@ trait Counter {
 /** A Scala façade class for Counter. */
 class CounterWrapper(val raw: ch.Counter) extends Counter {
   def count[A,B](pf: PartialFunction[A,B]): PartialFunction[A,B] =
-    new Counter.CountingPf(raw, pf)
+    new Counter.CountingPf(this, pf)
 
   def +=(delta: Long): Unit = raw inc delta
   def -=(delta: Long): Unit = raw dec delta
