@@ -9,8 +9,7 @@ matrix:
       env: AKKA_VERSION=2.3.4
     - scala: "2.11.2"
       env: AKKA_VERSION=2.3.4
-jdk:
-  - oraclejdk7
+jdk: oraclejdk7
 env:
   global:
     - LIB_VERSION=build-$TRAVIS_BUILD_NUMBER
