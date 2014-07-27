@@ -10,14 +10,14 @@ This project started as a fork from [metrics-scala](https://github.com/erikvanoo
 * methods have been "unitized", and all use of procedure syntax removed
 * trivial doc comments collapsed to one-liners
 * Removal of deprecated methods
-* Wrapper types extend `AnyVal` to reduce runtime overhead
-* Implicit conversions provided (in the package object) from raw codahale types to the wrapper types
+* Core logic lifted to interfaces and mocks provided that don't delegate to codahale-metrics.
 * Anonymous/Structural classes given a name and refactored to singletons where possible
 * Minor renaming to make the code better self-documenting
 
 ###Akka Support
 
-By far the biggest rewrite is around actor instrumentation.  By moving this logic into a sub-package of `akka` (specifically, to `akka.imperial`) we gain access to the package-protected  `aroundReceive` method.
+By far the biggest rewrite is around actor instrumentation.
+By moving this logic into a sub-package of `akka` (specifically, to `akka.imperial`) we gain access to the package-protected `aroundReceive` method that arrived with Akka 2.3.
 
 This allows instrumentation traits to be mixed in as actors are defined, there's no need to retrofit the traits any more.
 
@@ -27,6 +27,11 @@ Another change is that metric naming for instrumented actors is now based on the
 
 ###Versioning
 
-As with metrics-scala, the version number of imperial also embeds the version of Akka being targeted. 
+There are two variants of this project released:
+
+- scala-imperial-ci is an alternative to using snapshots, and is numbered after successful travis-ci builds.
+- scala-imperial uses semantic versioning.
+
+Owing to the new mechanism used, only Akka 2.3.x is targeted at this point.
 
 
