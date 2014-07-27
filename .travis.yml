@@ -1,15 +1,12 @@
 language: scala
-matrix:
-  include:
-    - scala: "2.10.4"
-      env: AKKA_VERSION=2.1.4
-    - scala: "2.10.4"
-      env: AKKA_VERSION=2.2.4
-    - scala: "2.10.4"
-      env: AKKA_VERSION=2.3.4
-    - scala: "2.11.2"
-      env: AKKA_VERSION=2.3.4
-jdk: oraclejdk7
+scala:
+  - "2.10.4"
+  - "2.11.2"
+jdk:
+  - oraclejdk7
+  - oraclejdk8
+  - openjdk7
+  - openjdk8
 env:
   global:
     - LIB_VERSION=build-$TRAVIS_BUILD_NUMBER

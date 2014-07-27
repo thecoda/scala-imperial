@@ -3,8 +3,7 @@ import bintray.Keys._
 
 // See crossrelease.sh for valid combinations of akkaVersion and crossScalaVersion.
 
-// Akka versions: 2.1.4, 2.2.3, 2.3.2
-akkaVersion := Try(sys.env("AKKA_VERSION")).getOrElse("2.3.4")
+akkaVersion := "2.3.4"
 
 organization := "net.thecoda"
 
@@ -12,15 +11,9 @@ name := "scala-imperial"
 
 lazy val baseVersion = "0.1.0"
 
-version <<= (akkaVersion) { av =>
-  val akkaVersion = if (av.nonEmpty) "_a" + av.split('.').take(2).mkString(".") else ""
-  baseVersion + akkaVersion
-}
+version := "0.1.0"
 
-description <<= (scalaVersion, akkaVersion) { (sv, av) =>
-  val akkaDescription = if (av.nonEmpty) "Akka " + av +" and " else ""
-  "scala-imperial for " + akkaDescription + "Scala " + sbt.cross.CrossVersionUtil.binaryScalaVersion(sv)
-}
+description := "A scala wrapper for codahale-metrics, with a core focus on improved akka integration"
 
 scalaVersion := "2.10.4"
 
