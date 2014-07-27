@@ -2,10 +2,7 @@ language: scala
 scala:
   - "2.11.2"
   - "2.10.4"
-jdk:
-  - oraclejdk8
-  - oraclejdk7
-  - openjdk7
+jdk: oraclejdk7
 env:
   global:
     - LIB_VERSION=build-$TRAVIS_BUILD_NUMBER

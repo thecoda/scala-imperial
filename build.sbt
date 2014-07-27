@@ -7,11 +7,13 @@ akkaVersion := "2.3.4"
 
 organization := "net.thecoda"
 
-name := "scala-imperial"
+lazy val ciBuildNum: Option[String] = Try(Some(sys.env("TRAVIS_BUILD_NUMBER"))) getOrElse None
 
-lazy val baseVersion = "0.1.0"
+name := "scala-imperial" + (if(ciBuildNum.isDefined) "-ci" else "")
 
-version := "0.1.0"
+lazy val semVersion = "0.1.0"
+
+version := ciBuildNum getOrElse semVersion
 
 description := "A scala wrapper for codahale-metrics, with a core focus on improved akka integration"
 
