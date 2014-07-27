@@ -1,5 +1,7 @@
 package imperial
 
+import scala.language.implicitConversions
+
 import com.codahale.metrics.health.HealthCheck.Result
 import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
 

@@ -1,8 +1,21 @@
 language: scala
-scala:
-  - 2.11.0
-  - 2.10.0
+matrix:
+  include:
+    - scala: "2.10.4"
+      env: AKKA_VERSION=2.1.4
+    - scala: "2.10.4"
+      env: AKKA_VERSION=2.2.4
+    - scala: "2.10.4"
+      env: AKKA_VERSION=2.3.4
+    - scala: "2.11.2"
+      env: AKKA_VERSION=2.3.4
 jdk:
   - oraclejdk7
-  - openjdk7
-  
+env:
+  global:
+    - LIB_VERSION=build-$TRAVIS_BUILD_NUMBER
+    - secure: "pAqny4glSCwbqgJQiDhFUlj32F0NUPfYBUWh30fnrOHtsdvENWkySq4rR8GPp6MD68EMstLUy4C5aHscZTax1vK8u8HREoiw9z1ItnTuIgBUU8Q4rTEusstbOPtrl4IEBJHSmYrz4JjEwhir1R80/25pcPhEwH5jM7W+LXMICmk="
+    - secure: "WEcMPrisfL4jF7RA8EDRmJVLlQmrfqFZMiUPNg0+L3HEwhoWvLEhUjHb27CimMbP9D93U9At5saALPrF9dgs2O4AOz7uKmf2W83ZESeQjfeuTc+gPo/9ueNoD6oq8CJ+aeSIyHF9JQzn+FLK3bXPWQY0T9X3aQ1MSymm1rw5A20="
+# before_script: ./publish/bintray.sh
+# script: sbt test +publishSigned
+

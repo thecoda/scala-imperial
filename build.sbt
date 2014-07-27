@@ -1,13 +1,16 @@
+import scala.util.Try
+import bintray.Keys._
+
 // See crossrelease.sh for valid combinations of akkaVersion and crossScalaVersion.
 
 // Akka versions: 2.1.4, 2.2.3, 2.3.2
-akkaVersion := "2.3.2"
+akkaVersion := Try(sys.env("AKKA_VERSION")).getOrElse("2.3.4")
 
 organization := "net.thecoda"
 
-name := "imperial"
+name := "scala-imperial"
 
-lazy val baseVersion = "3.2.0"
+lazy val baseVersion = "0.1.0"
 
 version <<= (akkaVersion) { av =>
   val akkaVersion = if (av.nonEmpty) "_a" + av.split('.').take(2).mkString(".") else ""
@@ -16,7 +19,7 @@ version <<= (akkaVersion) { av =>
 
 description <<= (scalaVersion, akkaVersion) { (sv, av) =>
   val akkaDescription = if (av.nonEmpty) "Akka " + av +" and " else ""
-  "scametrics for " + akkaDescription + "Scala " + sbt.cross.CrossVersionUtil.binaryScalaVersion(sv)
+  "scala-imperial for " + akkaDescription + "Scala " + sbt.cross.CrossVersionUtil.binaryScalaVersion(sv)
 }
 
 scalaVersion := "2.10.4"
@@ -61,17 +64,17 @@ javacOptions ++= Seq("-Xmx512m", "-Xms128m", "-Xss10m")
 
 javaOptions ++= Seq("-Xmx512m", "-Djava.awt.headless=true")
 
-scalacOptions ++= Seq("-deprecation", "-unchecked")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
 
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (version.value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-}
-
-credentials += Credentials(Path.userHome / ".sbt" / "sonatype.credentials")
+//publishTo := {
+//  val nexus = "https://oss.sonatype.org/"
+//  if (version.value.trim.endsWith("SNAPSHOT"))
+//    Some("snapshots" at nexus + "content/repositories/snapshots")
+//  else
+//    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+//}
+//
+//credentials += Credentials(Path.userHome / ".sbt" / "sonatype.credentials")
 
 publishMavenStyle := true
 
@@ -79,22 +82,34 @@ publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 
-licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+
+pgpPassphrase := Some(Try(sys.env("SECRET")).getOrElse("goaway").toCharArray)
+
+pgpSecretRing := file("./publish/sonatype.asc")
+
+bintrayPublishSettings
+
+repository in bintray := "repo"
+
+bintrayOrganization in bintray := None
+
+publishMavenStyle := true
+
+publishArtifact in Test := false
+
+homepage := Some(url("https://github.com/thecoda/scala-imperial"))
 
 pomExtra := (
-  <url>https://github.com/erikvanoosten/metrics-scala</url>
+  <url>https://github.com/thecoda/imperial-scala</url>
   <scm>
-    <url>git@github.com:erikvanoosten/metrics-scala.git</url>
-    <connection>scm:git:git@github.com:erikvanoosten/metrics-scala.git</connection>
+    <url>git@github.com:thecoda/imperial-scala.git</url>
+    <connection>scm:git:git@github.com:thecoda/imperial-scala.git</connection>
   </scm>
   <developers>
     <developer>
-      <name>Erik van Oosten</name>
-      <url>http://day-to-day-stuff.blogspot.com/</url>
-    </developer>
-    <developer>
-      <name>Brian Scully</name>
-      <url>https://github.com/scullxbones/</url>
+      <name>Kevin Wright</name>
+      <url>https://github.com/kevinwright/</url>
     </developer>
   </developers>
 )
