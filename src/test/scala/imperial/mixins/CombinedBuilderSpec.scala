@@ -23,7 +23,7 @@ import org.mockito.Mockito.verify
 import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
-import imperial.metrics.Counter
+import imperial.measures.Counter
 import imperial.MetricName
 
 @RunWith(classOf[JUnitRunner])

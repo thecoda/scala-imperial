@@ -51,16 +51,16 @@ object ActorMetricsSpec {
     }
 
 
-    class CounterTestActor(builder: MetricBuilder) extends TestActor(builder) with ReceiveCounterActor {
+    class CounterTestActor(builder: MetricBuilder) extends TestActor(builder) with CountReceives {
       override def receiveCounterName = "receiveCounter"
     }
 
-    class TimerTestActor(builder: MetricBuilder) extends TestActor(builder) with ReceiveTimerActor
+    class TimerTestActor(builder: MetricBuilder) extends TestActor(builder) with TimeReceives
 
-    class ExceptionMeterTestActor(builder: MetricBuilder) extends ExceptionThrowingTestActor(builder) with ReceiveExceptionMeterActor
+    class ExceptionMeterTestActor(builder: MetricBuilder) extends ExceptionThrowingTestActor(builder) with MeterReceiveExceptions
 
     class ComposedActor(builder: MetricBuilder) extends TestActor(builder)
-    with ReceiveCounterActor with ReceiveTimerActor with ReceiveExceptionMeterActor
+    with CountReceives with TimeReceives with MeterReceiveExceptions
 
   }
 

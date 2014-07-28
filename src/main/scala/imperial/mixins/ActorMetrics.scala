@@ -18,10 +18,10 @@ package imperial.mixins
 
 import akka.actor.Actor
 import akka.enhancement.PublicAroundReceive
-import imperial.metrics.{Timer, Meter, Counter}
+import imperial.measures.{Timer, Meter, Counter}
 import imperial.MetricName
 
-trait InstrumentedActor extends Actor with PublicAroundReceive with ImperialInstrumented {
+trait ImperialInstrumentedActor extends Actor with PublicAroundReceive with ImperialInstrumented {
   private[this] lazy val actorPathBaseName = MetricName(getClass)
   override def metricBaseName: MetricName = actorPathBaseName
   metrics.gauge("classname"){classBasedBaseName.name}
@@ -50,7 +50,7 @@ trait InstrumentedActor extends Actor with PublicAroundReceive with ImperialInst
  * }
  * }}}
  */
-trait ReceiveCounterActor extends InstrumentedActor {
+trait CountReceives extends ImperialInstrumentedActor {
 
   def receiveCounterName: String = MetricName(getClass).append("receiveCounter").name
   lazy val counter: Counter = metrics.counter(receiveCounterName)
@@ -84,7 +84,7 @@ trait ReceiveCounterActor extends InstrumentedActor {
  * }
  * }}}
  */
-trait ReceiveTimerActor extends InstrumentedActor {
+trait TimeReceives extends ImperialInstrumentedActor {
 
   def receiveTimerName: String = MetricName(getClass).append("receiveTimer").name
   lazy val timer: Timer = metrics.timer(receiveTimerName)
@@ -117,7 +117,7 @@ trait ReceiveTimerActor extends InstrumentedActor {
  * }
  * }}}
  */
-trait ReceiveExceptionMeterActor extends InstrumentedActor {
+trait MeterReceiveExceptions extends ImperialInstrumentedActor {
 
   def receiveExceptionMeterName: String = MetricName(getClass).append("receiveExceptionMeter").name
   lazy val meter: Meter = metrics.meter(receiveExceptionMeterName)

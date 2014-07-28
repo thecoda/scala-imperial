@@ -3,7 +3,7 @@ package mocks
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.TimeUnit
-import imperial.metrics.{TimerContext, Timer}
+import imperial.measures.{TimerContext, Timer}
 
 class MockTimerContext(timer: Timer) extends TimerContext {
   val start = System.nanoTime()

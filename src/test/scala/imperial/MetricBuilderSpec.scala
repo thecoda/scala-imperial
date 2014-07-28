@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 import org.scalatest.Matchers._
 import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
-import imperial.metrics._
+import imperial.measures._
 import imperial.mixins.ImperialInstrumented
 
 @RunWith(classOf[JUnitRunner])

@@ -2,7 +2,7 @@ package imperial
 package mocks
 
 import collection.{mutable => mut}
-import imperial.metrics.{Histogram, Gauge}
+import imperial.measures.{Histogram, Gauge}
 
 class MockMetricBuilder extends MetricBuilder  {
   val metricMap: mut.Map[String, Any] = mut.Map.empty

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial.metrics
+package imperial.measures
 
 import java.util.concurrent.TimeUnit
 
