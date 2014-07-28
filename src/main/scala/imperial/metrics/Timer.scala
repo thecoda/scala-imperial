@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.metrics
 
 import java.util.concurrent.TimeUnit
 
 import com.codahale.{metrics => ch}
+import imperial.`package`._
 
 object Timer {
   def apply(raw: ch.Timer): Timer = new TimerWrapper(raw)

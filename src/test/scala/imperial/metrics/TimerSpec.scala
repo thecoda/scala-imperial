@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.metrics
 
 import java.util.concurrent.TimeUnit
 
@@ -37,7 +37,7 @@ object TimerSpec {
 @RunWith(classOf[JUnitRunner])
 class TimerSpec extends FunSpec with OneInstancePerTest {
 
-  import imperial.TimerSpec._
+  import TimerSpec._
 
   describe("A timer") {
     val metric = mock[com.codahale.metrics.Timer]

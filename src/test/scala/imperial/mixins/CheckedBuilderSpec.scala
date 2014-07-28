@@ -15,6 +15,7 @@
  */
 
 package imperial
+package mixins
 
 import scala.language.implicitConversions
 
@@ -26,8 +27,8 @@ import org.scalatest.FunSpec
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
-
 import scala.util.Try
+
 
 @RunWith(classOf[JUnitRunner])
 class HealthCheckSpec extends FunSpec {
@@ -36,7 +37,7 @@ class HealthCheckSpec extends FunSpec {
     it ("registers the created checker") {
       val checkOwner = newCheckOwner
       val check = checkOwner.createBooleanHealthCheck { true }
-      verify(checkOwner.registry).register("imperial.CheckOwner.test", check)
+      verify(checkOwner.registry).register("imperial.mixins.CheckOwner.test", check)
     }
 
     it("build health checks that call the provided checker") {
@@ -150,7 +151,7 @@ private trait SimpleChecker {
   def check(): Boolean
 }
 
-private class CheckOwner() extends CheckedBuilder {
+private class CheckOwner() extends ImperialHealthChecked {
   val registry: HealthCheckRegistry = mock[HealthCheckRegistry]
 
   // Unfortunately we need a helper method for each supported type. If we wanted a single helper method,

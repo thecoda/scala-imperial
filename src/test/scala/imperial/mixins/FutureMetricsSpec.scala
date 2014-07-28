@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.mixins
 
 import imperial.mocks.{MockMetricBuilder, MockTimer}
 import org.junit.runner.RunWith
@@ -33,7 +33,7 @@ class FutureMetricsSpec extends FlatSpec {
     def reportFailure(t: Throwable): Unit = throw t
   }
 
-  trait WithMockMetrics extends FutureMetrics with InstrumentedBuilder {
+  trait WithMockMetrics extends FutureMetrics with ImperialInstrumented {
     val metricRegistry = null
     override val metrics = new MockMetricBuilder
   }

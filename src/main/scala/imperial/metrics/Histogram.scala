@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.metrics
 
 import com.codahale.{metrics => ch}
+import imperial.`package`._
 
 object Histogram {
   def apply(raw: ch.Histogram): Histogram = new HistogramWrapper(raw)

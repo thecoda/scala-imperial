@@ -17,6 +17,7 @@
 package imperial
 
 import com.codahale.{metrics => ch}
+import imperial.metrics._
 
 /** Builds and registering metrics. */
 trait MetricBuilder {
@@ -35,6 +36,12 @@ trait MetricBuilder {
 
   /** Creates a new timer metric. */
   def timer(name: String): Timer
+
+// TODO: make this the API, wrap the ch registry out of sight
+//  def forBase(base: Class[_]): MetricBuilder
+//  def forBase(base: akka.actor.ActorPath): MetricBuilder
+//  def forBase(base: String): MetricBuilder
+//  def forBase(base: MetricName): MetricBuilder
 }
 
 object MetricBuilder {

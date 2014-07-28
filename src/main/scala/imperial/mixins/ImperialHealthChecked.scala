@@ -1,4 +1,4 @@
-package imperial
+package imperial.mixins
 
 import scala.language.implicitConversions
 
@@ -10,7 +10,8 @@ import scala.util.{Failure, Success, Try}
 /**
  * The mixin trait for creating a class which creates health checks.
  */
-trait CheckedBuilder extends BaseBuilder {
+trait ImperialHealthChecked extends ImperialBase {
+
   /**
    * The [[com.codahale.metrics.health.HealthCheckRegistry]] where created metrics are registered.
    */

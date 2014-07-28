@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.metrics
 
 import org.junit.runner.RunWith
 import org.mockito.Mockito.{verify, when}

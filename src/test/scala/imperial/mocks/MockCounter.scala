@@ -1,6 +1,8 @@
 package imperial
 package mocks
 
+import imperial.metrics.Counter
+
 class MockCounter extends Counter {
   var count: Long = 0
 

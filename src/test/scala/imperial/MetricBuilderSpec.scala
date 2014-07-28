@@ -21,13 +21,15 @@ import org.junit.runner.RunWith
 import org.scalatest.Matchers._
 import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
+import imperial.metrics._
+import imperial.mixins.ImperialInstrumented
 
 @RunWith(classOf[JUnitRunner])
 class MetricBuilderSpec extends FunSpec with OneInstancePerTest {
 
   private val testMetricRegistry = new MetricRegistry()
 
-  trait Instrumented extends InstrumentedBuilder {
+  trait Instrumented extends ImperialInstrumented {
     val metricRegistry = testMetricRegistry
   }
 

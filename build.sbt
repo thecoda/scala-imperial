@@ -1,9 +1,6 @@
+import scala.Some
 import scala.util.Try
 import bintray.Keys._
-
-// See crossrelease.sh for valid combinations of akkaVersion and crossScalaVersion.
-
-akkaVersion := "2.3.4"
 
 organization := "net.thecoda"
 
@@ -23,37 +20,22 @@ crossScalaVersions := Seq("2.10.4", "2.11.2")
 
 crossVersion := CrossVersion.binary
 
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-)
+//resolvers ++= Seq(
+//  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
+//)
+
+lazy val akkaVersion = "2.3.4"
 
 libraryDependencies ++= Seq(
   "com.codahale.metrics" % "metrics-core" % "3.0.2",
   "com.codahale.metrics" % "metrics-healthchecks" % "3.0.2",
+  "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "junit" % "junit" % "4.11" % "test",
   "org.scalatest" %% "scalatest" % "2.2.0" % "test",
-  "org.mockito" % "mockito-all" % "1.9.5" % "test"
+  "org.mockito" % "mockito-all" % "1.9.5" % "test",
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
 )
 
-libraryDependencies <++= (akkaVersion) { av =>
-  if (av.nonEmpty)
-    Seq(
-      "com.typesafe.akka" %% "akka-actor" % av,
-      "com.typesafe.akka" %% "akka-testkit" % av % "test"
-    )
-  else
-    Seq()
-}
-
-unmanagedSourceDirectories in Compile <<= (unmanagedSourceDirectories in Compile, sourceDirectory in Compile, akkaVersion) { (sds: Seq[java.io.File], sd: java.io.File, av: String) =>
-  val extra = new java.io.File(sd, "akka")
-  (if (av.nonEmpty && extra.exists) Seq(extra) else Seq()) ++ sds
-}
-
-unmanagedSourceDirectories in Test <<= (unmanagedSourceDirectories in Test, sourceDirectory in Test, akkaVersion) { (sds: Seq[java.io.File], sd: java.io.File, av: String) =>
-  val extra = new java.io.File(sd, "akka")
-  (if (av.nonEmpty && extra.exists) Seq(extra) else Seq()) ++ sds
-}
 
 javacOptions ++= Seq("-Xmx512m", "-Xms128m", "-Xss10m")
 
@@ -96,10 +78,10 @@ publishArtifact in Test := false
 homepage := Some(url("https://github.com/thecoda/scala-imperial"))
 
 pomExtra := (
-  <url>https://github.com/thecoda/imperial-scala</url>
+  <url>https://github.com/thecoda/scala-imperial</url>
   <scm>
-    <url>git@github.com:thecoda/imperial-scala.git</url>
-    <connection>scm:git:git@github.com:thecoda/imperial-scala.git</connection>
+    <url>git@github.com:thecoda/scala-imperial.git</url>
+    <connection>scm:git:git@github.com:thecoda/scala-imperial.git</connection>
   </scm>
   <developers>
     <developer>

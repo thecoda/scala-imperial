@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.mixins
 
 import akka.actor.{Actor, ActorSystem}
 import imperial.mocks.MockMetricBuilder
@@ -22,45 +22,54 @@ import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
+import imperial.MetricBuilder
 
-object TestFixture {
+object ActorMetricsSpec {
 
-  trait MetricRegistryFixture extends InstrumentedBuilder {
-    val metricRegistry = null
-    def builder: MetricBuilder
-    override def metrics: MetricBuilder = builder
-  }
+  object TestFixture {
 
-  class TestActor(val builder: MetricBuilder) extends Actor with MetricRegistryFixture {
-    val messages = new scala.collection.mutable.ListBuffer[String]()
+    trait MetricRegistryFixture extends ImperialInstrumented {
+      val metricRegistry = null
 
-    def receive = { case message: String => println("message: " + message); messages += message }
-  }
+      def builder: MetricBuilder
 
-  class ExceptionThrowingTestActor(val builder: MetricBuilder) extends Actor with MetricRegistryFixture {
-    def receive = {
-      case _ => throw new RuntimeException()
+      override def metrics: MetricBuilder = builder
     }
-  }
+
+    class TestActor(val builder: MetricBuilder) extends Actor with MetricRegistryFixture {
+      val messages = new scala.collection.mutable.ListBuffer[String]()
+
+      def receive = {
+        case message: String => println("message: " + message); messages += message
+      }
+    }
+
+    class ExceptionThrowingTestActor(val builder: MetricBuilder) extends Actor with MetricRegistryFixture {
+      def receive = {
+        case _ => throw new RuntimeException()
+      }
+    }
 
 
-  class CounterTestActor(builder: MetricBuilder) extends TestActor(builder) with ReceiveCounterActor {
-    override def receiveCounterName = "receiveCounter"
-  }
+    class CounterTestActor(builder: MetricBuilder) extends TestActor(builder) with ReceiveCounterActor {
+      override def receiveCounterName = "receiveCounter"
+    }
 
-  class TimerTestActor(builder: MetricBuilder) extends TestActor(builder) with ReceiveTimerActor
+    class TimerTestActor(builder: MetricBuilder) extends TestActor(builder) with ReceiveTimerActor
 
-  class ExceptionMeterTestActor(builder: MetricBuilder) extends ExceptionThrowingTestActor(builder) with ReceiveExceptionMeterActor
+    class ExceptionMeterTestActor(builder: MetricBuilder) extends ExceptionThrowingTestActor(builder) with ReceiveExceptionMeterActor
 
-  class ComposedActor(builder: MetricBuilder) extends TestActor(builder)
+    class ComposedActor(builder: MetricBuilder) extends TestActor(builder)
     with ReceiveCounterActor with ReceiveTimerActor with ReceiveExceptionMeterActor
+
+  }
 
 }
 
 @RunWith(classOf[JUnitRunner])
 class ActorMetricsSpec extends FlatSpec {
   import akka.testkit.TestActorRef
-  import TestFixture._
+  import ActorMetricsSpec.TestFixture._
 
   implicit val system = ActorSystem()
 
@@ -78,8 +87,7 @@ class ActorMetricsSpec extends FlatSpec {
     val ref = TestActorRef(new TimerTestActor(builder))
     ref ! "test"
     println(builder.describe)
-//      val receiveTimer = ref.underlyingActor.timer
-    val receiveTimer = builder.timer("imperial.TestFixture.TimerTestActor.receiveTimer")
+    val receiveTimer = ref.underlyingActor.timer
     assert(receiveTimer.count === 1)
   }
 

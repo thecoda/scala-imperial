@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.metrics
 
 import com.codahale.{metrics => ch}
 

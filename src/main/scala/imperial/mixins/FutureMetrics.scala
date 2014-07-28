@@ -1,12 +1,11 @@
-package imperial
-
+package imperial.mixins
 
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Provides timing of future executions.
  */
-trait FutureMetrics { self: InstrumentedBuilder =>
+trait FutureMetrics { self: ImperialInstrumented =>
   /**
    * Creates a future that executes the given `action` and times it.
    *

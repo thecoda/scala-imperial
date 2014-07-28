@@ -14,31 +14,39 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.metrics
 
 import org.junit.runner.RunWith
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.Matchers._
 import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 
 @RunWith(classOf[JUnitRunner])
-class GaugeSpec extends FunSpec with OneInstancePerTest {
-  describe("A gauge") {
-    val metric = mock[com.codahale.metrics.Gauge[Int]]
-    val gauge = new GaugeWrapper(metric)
-    
-    it("invokes underlying function for sugar factory") {
-      val sugared = Gauge({ 1 })
-      
-      sugared.value should equal (1)
+class HistogramSpec extends FunSpec with OneInstancePerTest {
+  describe("A histogram") {
+    val metric = mock[com.codahale.metrics.Histogram]
+    val histogram = Histogram(metric)
+
+    it("updates the underlying histogram with an int") {
+      histogram += 12
+
+      verify(metric).update(12)
     }
-    
-    it("invokes getValue on underlying gauge") {
-      when(metric.getValue).thenReturn(1)
-      
-      gauge.value should equal (1)
+
+    it("updates the underlying histogram with a long") {
+      histogram += 12L
+
+      verify(metric).update(12L)
+    }
+
+    it("retrieves a snapshot for statistics") {
+      val snapshot = mock[com.codahale.metrics.Snapshot]
+      when(snapshot.getMax).thenReturn(1L)
+      when(metric.getSnapshot).thenReturn(snapshot)
+
+      histogram.max should equal (1L)
     }
   }
 }

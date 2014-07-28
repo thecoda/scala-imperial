@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.mixins
 
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
@@ -23,6 +23,8 @@ import org.mockito.Mockito.verify
 import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
+import imperial.metrics.Counter
+import imperial.MetricName
 
 @RunWith(classOf[JUnitRunner])
 class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
@@ -32,10 +34,10 @@ class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
       val combinedBuilder = new CombinedBuilder
 
       combinedBuilder.createCounter()
-      verify(combinedBuilder.metricRegistry).counter("imperial.CombinedBuilderSpec.CombinedBuilder.cnt")
+      verify(combinedBuilder.metricRegistry).counter("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.cnt")
 
       val check = combinedBuilder.createBooleanHealthCheck { true }
-      verify(combinedBuilder.registry).register("imperial.CombinedBuilderSpec.CombinedBuilder.test", check)
+      verify(combinedBuilder.registry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
     }
 
     it("supports overriding the metric base name") {
@@ -51,7 +53,7 @@ class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
     }
   }
 
-  private class CombinedBuilder() extends InstrumentedBuilder with CheckedBuilder {
+  private class CombinedBuilder() extends ImperialInstrumented with ImperialHealthChecked {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
     val registry: HealthCheckRegistry = mock[HealthCheckRegistry]
 

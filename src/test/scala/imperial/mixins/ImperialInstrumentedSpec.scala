@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.mixins
 
 import com.codahale.metrics.MetricRegistry
 import org.junit.runner.RunWith
@@ -22,15 +22,17 @@ import org.mockito.Mockito.verify
 import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
+import imperial.metrics.Counter
+import imperial.MetricName
 
 @RunWith(classOf[JUnitRunner])
-class InstrumentedBuilderSpec extends FunSpec with OneInstancePerTest {
+class ImperialInstrumentedSpec extends FunSpec with OneInstancePerTest {
 
   describe("InstrumentedBuilder") {
     it("uses owner class as metric base name") {
       val metricOwner = new MetricOwner
       metricOwner.createCounter()
-      verify(metricOwner.metricRegistry).counter("imperial.InstrumentedBuilderSpec.MetricOwner.cnt")
+      verify(metricOwner.metricRegistry).counter("imperial.mixins.ImperialInstrumentedSpec.MetricOwner.cnt")
     }
 
     it("supports overriding the metric base name") {
@@ -42,7 +44,7 @@ class InstrumentedBuilderSpec extends FunSpec with OneInstancePerTest {
     }
   }
 
-  private class MetricOwner() extends InstrumentedBuilder {
+  private class MetricOwner() extends ImperialInstrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
 
     def createCounter(): Counter = metrics.counter("cnt")

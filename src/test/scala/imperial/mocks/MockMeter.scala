@@ -1,6 +1,6 @@
 package imperial.mocks
 
-import imperial.Meter
+import imperial.metrics.Meter
 
 class MockMeter extends Meter {
   var count: Long = 0L

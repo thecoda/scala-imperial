@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package imperial
+package imperial.mixins
 
 import com.codahale.metrics.MetricRegistry
+import imperial.MetricBuilder
 
 /**
  * The mixin trait for creating a class which is instrumented with metrics.
@@ -52,7 +53,8 @@ import com.codahale.metrics.MetricRegistry
  * }
  * }}}
  */
-trait InstrumentedBuilder extends BaseBuilder {
+trait ImperialInstrumented extends ImperialBase {
+
   private lazy val metricBuilder = MetricBuilder(metricBaseName, metricRegistry)
 
   /**
