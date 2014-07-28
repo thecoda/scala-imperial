@@ -1,18 +1,22 @@
 scala-imperial
 ==============
 
-A [minty fresh](http://en.wikipedia.org/wiki/Mint_(candy)#Mint_imperials) scala wrapper for [Coda Hale's Metrics](https://github.com/codahale/metrics), with a core focus on improved Akka support.
+A [minty fresh](http://en.wikipedia.org/wiki/Mint_(candy)#Mint_imperials) provider of metrics, served by the Pint!
 
+This is a scala wrapper for [Coda Hale's Metrics](https://github.com/codahale/metrics), and started as a fork from [metrics-scala](https://github.com/erikvanoosten/metrics-scala).
 It's so-named because "[imperial](http://en.wikipedia.org/wiki/Imperial_units)" is the natural counterpoint to "metric" _(this may come as something of a surprise to anyone used to speaking of "American" units... Sorry folks, you didn't invent them, you're just the last hold-out for an old British system)_
 
-This project started as a fork from [metrics-scala](https://github.com/erikvanoosten/metrics-scala) and still retains the core wrapper types.  The code has been cleaned up though, and the following changes made:
+The API has undergone a significant change + cleanup since the fork, with the goal of improving maintainability and providing far better Akka integration.
+Some of the changes made include:
 
 * methods have been "unitized", and all use of procedure syntax removed
 * trivial doc comments collapsed to one-liners
 * Removal of deprecated methods
 * Core logic lifted to interfaces and mocks provided that don't delegate to codahale-metrics.
 * Anonymous/Structural classes given a name and refactored to singletons where possible
-* Minor renaming to make the code better self-documenting
+* Renaming to make the code better self-documenting
+* The `Registry` functionality is being folded into the `Builder` classes
+* classes have been grouped into sub-packages.
 
 ###Akka Support
 
