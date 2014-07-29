@@ -22,7 +22,7 @@ import imperial.measures._
 /** Builds and registering metrics. */
 trait MetricBuilder {
 
-  def baseName = ""
+  def baseName: String
 
   /** Registers a new gauge metric. */
   def gauge[A](name: String)(f: => A): Gauge[A]
@@ -41,8 +41,7 @@ trait MetricBuilder {
 
 }
 
-trait RootMetricBuilder {
-  val baseName = ""
+trait RootMetricBuilder extends MetricBuilder {
   // TODO: make this the API, wrap the ch registry out of sight
   //  def forBase(base: Class[_]): MetricBuilder
   //  def forBase(base: akka.actor.ActorPath): MetricBuilder
@@ -50,12 +49,16 @@ trait RootMetricBuilder {
   //  def forBase(base: MetricName): MetricBuilder
 }
 
+class NestedMetricBuilder(underlying: MetricBuilder, relativePath: String) extends MetricBuilder {
+
+}
+
 object MetricBuilder {
   def apply(baseName: MetricName, registry: ch.MetricRegistry): MetricBuilder =
     new WrappedMetricBuilder(baseName, registry)
 }
 
-class WrappedMetricBuilder(val baseName: MetricName, val registry: ch.MetricRegistry) extends MetricBuilder {
+class WrappedMetricBuilder(val baseName: MetricName, val registry: ch.MetricRegistry) extends RootMetricBuilder {
 
   private[this] def metricName(name: String): String = baseName.append(name).name
 
