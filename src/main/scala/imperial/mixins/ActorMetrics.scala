@@ -24,10 +24,6 @@ import imperial.QualifiedName
 trait ImperialInstrumentedActor extends Actor with PublicAroundReceive with ImperialInstrumented {
   private[this] lazy val actorPathBaseName = QualifiedName(getClass)
 
-  //need for ImperialBase support of healthchecks
-  // TODO: this can be removed once healthcheck is folded into ImperialInstrumented
-  override def metricBaseName: QualifiedName = actorPathBaseName
-
   private[this] lazy val actorPathedMetricBuilder = armoury prefixedWith actorPathBaseName
 
   //Dump the class name into a gauge, as we're naming off the actor path

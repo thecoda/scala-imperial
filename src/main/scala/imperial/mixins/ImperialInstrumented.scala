@@ -52,14 +52,6 @@ package mixins
  * }}}
  */
 trait ImperialInstrumented {
-
   /** The Armoury where created measures are registered. */
   def armoury: RootArmoury
-
-//  lazy val qualifiedClassBaseName: QualifiedName = QualifiedName(getClass)
-//  private[this] lazy val classPathedMetricBuilder = imperial prefixedWith qualifiedClassBaseName
-
-  /** The MetricBuilder that can be used for creating timers, counters, etc. */
-  def metrics: Armoury = classPathedMetricBuilder
-
 }
