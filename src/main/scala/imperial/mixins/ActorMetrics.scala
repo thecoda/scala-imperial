@@ -23,8 +23,15 @@ import imperial.MetricName
 
 trait ImperialInstrumentedActor extends Actor with PublicAroundReceive with ImperialInstrumented {
   private[this] lazy val actorPathBaseName = MetricName(getClass)
+
+  //need for ImperialBase support of healthchecks
+  // TODO: this can be removed once healthcheck is folded into ImperialInstrumented
   override def metricBaseName: MetricName = actorPathBaseName
-  metrics.gauge("classname"){classBasedBaseName.name}
+
+  private[this] lazy val actorPathedMetricBuilder = rootBuilder atBase actorPathBaseName
+
+  //Dump the class name into a gauge, as we're naming off the actor path
+  metrics.gauge("classname"){qualifiedClassBaseName.name}
 }
 
 /**

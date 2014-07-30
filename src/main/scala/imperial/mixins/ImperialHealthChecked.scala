@@ -7,6 +7,9 @@ import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
 
 import scala.util.{Failure, Success, Try}
 
+
+//TODO: fold this lot into ImperialBuilder/ImperialInstrumented
+
 /**
  * The mixin trait for creating a class which creates health checks.
  */
@@ -74,6 +77,8 @@ trait ImperialHealthChecked extends ImperialBase {
 sealed trait HealthCheckMagnet {
   def apply(unhealthyMessage: String): HealthCheck
 }
+
+//TODO: type classes!
 
 object HealthCheckMagnet {
   /**

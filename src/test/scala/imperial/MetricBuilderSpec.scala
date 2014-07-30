@@ -30,7 +30,7 @@ class MetricBuilderSpec extends FunSpec with OneInstancePerTest {
   private val testMetricRegistry = new MetricRegistry()
 
   trait Instrumented extends ImperialInstrumented {
-    val metricRegistry = testMetricRegistry
+    val rootBuilder = MetricBuilder wrap testMetricRegistry
   }
 
   class UnderTest extends Instrumented {

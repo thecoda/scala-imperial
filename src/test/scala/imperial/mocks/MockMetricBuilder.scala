@@ -4,7 +4,7 @@ package mocks
 import collection.{mutable => mut}
 import imperial.measures.{Histogram, Gauge}
 
-class MockMetricBuilder extends MetricBuilder  {
+class MockMetricBuilder extends RootMetricBuilder  {
   val metricMap: mut.Map[String, Any] = mut.Map.empty
   def getOrFetch[T](k: String)(v: T): T = metricMap.getOrElseUpdate(k, v).asInstanceOf[T]
 

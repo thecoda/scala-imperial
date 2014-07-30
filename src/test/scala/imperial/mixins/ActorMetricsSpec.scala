@@ -22,21 +22,13 @@ import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
-import imperial.MetricBuilder
+import imperial.RootMetricBuilder
 
 object ActorMetricsSpec {
 
   object TestFixture {
 
-    trait MetricRegistryFixture extends ImperialInstrumented {
-      val metricRegistry = null
-
-      def builder: MetricBuilder
-
-      override def metrics: MetricBuilder = builder
-    }
-
-    class TestActor(val builder: MetricBuilder) extends Actor with MetricRegistryFixture {
+    class TestActor(val rootBuilder: RootMetricBuilder) extends Actor with ImperialInstrumentedActor {
       val messages = new scala.collection.mutable.ListBuffer[String]()
 
       def receive = {
@@ -44,23 +36,28 @@ object ActorMetricsSpec {
       }
     }
 
-    class ExceptionThrowingTestActor(val builder: MetricBuilder) extends Actor with MetricRegistryFixture {
+    class ExceptionThrowingTestActor(val rootBuilder: RootMetricBuilder) extends Actor with ImperialInstrumentedActor {
       def receive = {
         case _ => throw new RuntimeException()
       }
     }
 
 
-    class CounterTestActor(builder: MetricBuilder) extends TestActor(builder) with CountReceives {
+    class CounterTestActor(rootBuilder: RootMetricBuilder) extends TestActor(rootBuilder) with CountReceives {
       override def receiveCounterName = "receiveCounter"
     }
 
-    class TimerTestActor(builder: MetricBuilder) extends TestActor(builder) with TimeReceives
+    class TimerTestActor(rootBuilder: RootMetricBuilder) extends TestActor(rootBuilder) with TimeReceives
 
-    class ExceptionMeterTestActor(builder: MetricBuilder) extends ExceptionThrowingTestActor(builder) with MeterReceiveExceptions
+    class ExceptionMeterTestActor(rootBuilder: RootMetricBuilder)
+      extends ExceptionThrowingTestActor(rootBuilder)
+      with MeterReceiveExceptions
 
-    class ComposedActor(builder: MetricBuilder) extends TestActor(builder)
-    with CountReceives with TimeReceives with MeterReceiveExceptions
+    class ComposedActor(rootBuilder: RootMetricBuilder)
+      extends TestActor(rootBuilder)
+      with CountReceives
+      with TimeReceives
+      with MeterReceiveExceptions
 
   }
 
@@ -79,7 +76,7 @@ class ActorMetricsSpec extends FlatSpec {
 
     ref.underlyingActor.receive should not be (null)
     ref ! "test"
-    assert(builder.counter("receiveCounter").count === 1)
+    assert(ref.underlyingActor.metrics.counter("receiveCounter").count === 1)
   }
 
   "A timer actor" should "time a message processing" in {

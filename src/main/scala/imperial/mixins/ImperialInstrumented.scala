@@ -16,8 +16,7 @@
 
 package imperial.mixins
 
-import com.codahale.metrics.MetricRegistry
-import imperial.MetricBuilder
+import imperial.{RootMetricBuilder, MetricBuilder}
 
 /**
  * The mixin trait for creating a class which is instrumented with metrics.
@@ -55,15 +54,12 @@ import imperial.MetricBuilder
  */
 trait ImperialInstrumented extends ImperialBase {
 
-  private lazy val metricBuilder = MetricBuilder(metricBaseName, metricRegistry)
+  /** The MetricRegistry where created metrics are registered. */
+  def rootBuilder: RootMetricBuilder
 
-  /**
-   * The MetricBuilder that can be used for creating timers, counters, etc.
-   */
-  def metrics: MetricBuilder = metricBuilder
+  private[this] lazy val classPathedMetricBuilder = rootBuilder atBase qualifiedClassBaseName
 
-  /**
-   * The MetricRegistry where created metrics are registered.
-   */
-  val metricRegistry: MetricRegistry
+  /** The MetricBuilder that can be used for creating timers, counters, etc. */
+  def metrics: MetricBuilder = classPathedMetricBuilder
+
 }

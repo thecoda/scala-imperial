@@ -24,7 +24,7 @@ import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import imperial.measures.Counter
-import imperial.MetricName
+import imperial.MetricBuilder
 
 @RunWith(classOf[JUnitRunner])
 class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
@@ -39,23 +39,13 @@ class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
       val check = combinedBuilder.createBooleanHealthCheck { true }
       verify(combinedBuilder.registry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
     }
-
-    it("supports overriding the metric base name") {
-      val combinedBuilder = new CombinedBuilder {
-        override lazy val metricBaseName: MetricName = MetricName("OverriddenBaseName")
-      }
-
-      combinedBuilder.createCounter()
-      verify(combinedBuilder.metricRegistry).counter("OverriddenBaseName.cnt")
-
-      val check = combinedBuilder.createBooleanHealthCheck { true }
-      verify(combinedBuilder.registry).register("OverriddenBaseName.test", check)
-    }
   }
 
   private class CombinedBuilder() extends ImperialInstrumented with ImperialHealthChecked {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
     val registry: HealthCheckRegistry = mock[HealthCheckRegistry]
+
+    val rootBuilder = MetricBuilder wrap metricRegistry
 
     def createCounter(): Counter = metrics.counter("cnt")
 

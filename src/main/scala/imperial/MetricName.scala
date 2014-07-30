@@ -53,7 +53,7 @@ object MetricName {
  *
  * Constructed via the companion object, e.g. `MetricName(getClass, "requests")`.
  */
-class MetricName private (val name: String) extends AnyVal {
+class MetricName private (val name: String) {
 
   /**
    * Extend a metric name.
@@ -64,5 +64,5 @@ class MetricName private (val name: String) extends AnyVal {
   def append(names: String*): MetricName =
     new MetricName((name.split('.') ++ names.filter(_ != null)).filter(_.nonEmpty).mkString("."))
 
-  def +(subname: String): MetricName = append(subname)
+  def +(subname: MetricName): MetricName = append(subname.name)
 }

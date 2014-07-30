@@ -23,29 +23,22 @@ import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import imperial.measures.Counter
-import imperial.MetricName
+import imperial.{MetricBuilder, MetricName}
 
 @RunWith(classOf[JUnitRunner])
 class ImperialInstrumentedSpec extends FunSpec with OneInstancePerTest {
 
-  describe("InstrumentedBuilder") {
+  describe("ImperialInstrumented") {
     it("uses owner class as metric base name") {
       val metricOwner = new MetricOwner
       metricOwner.createCounter()
       verify(metricOwner.metricRegistry).counter("imperial.mixins.ImperialInstrumentedSpec.MetricOwner.cnt")
     }
-
-    it("supports overriding the metric base name") {
-      val metricOwner = new MetricOwner {
-        override lazy val metricBaseName: MetricName = MetricName("OverriddenBaseName")
-      }
-      metricOwner.createCounter()
-      verify(metricOwner.metricRegistry).counter("OverriddenBaseName.cnt")
-    }
   }
 
   private class MetricOwner() extends ImperialInstrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
+    val rootBuilder = MetricBuilder wrap metricRegistry
 
     def createCounter(): Counter = metrics.counter("cnt")
   }

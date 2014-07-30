@@ -34,8 +34,7 @@ class FutureMetricsSpec extends FlatSpec {
   }
 
   trait WithMockMetrics extends FutureMetrics with ImperialInstrumented {
-    val metricRegistry = null
-    override val metrics = new MockMetricBuilder
+    val rootBuilder = new MockMetricBuilder
   }
 
   "A future timer" should "time an execution" in new WithMockMetrics {
