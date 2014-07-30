@@ -16,7 +16,7 @@
 
 package imperial
 
-object MetricName {
+object QualifiedName {
 
   /**
    * Create a metrics name from a [[Class]].
@@ -28,8 +28,8 @@ object MetricName {
    * @param names the name parts to append, `null`s are filtered out
    * @return a metric (base)name
    */
-  def apply(metricOwner: Class[_], names: String*): MetricName =
-    new MetricName(removeScalaParts(metricOwner.getName)).append(names: _*)
+  def apply(metricOwner: Class[_], names: String*): QualifiedName =
+    new QualifiedName(removeScalaParts(metricOwner.getName)).append(names: _*)
 
   // Example weird class name: TestContext$$anonfun$2$$anonfun$apply$TestObject$2$
   private def removeScalaParts(s: String) =
@@ -45,7 +45,7 @@ object MetricName {
    * @param names the name parts to append, `null`s are filtered out
    * @return a metric (base)name
    */
-  def apply(name: String, names: String*): MetricName = new MetricName(name).append(names: _*)
+  def apply(name: String, names: String*): QualifiedName = new QualifiedName(name).append(names: _*)
 }
 
 /**
@@ -53,7 +53,7 @@ object MetricName {
  *
  * Constructed via the companion object, e.g. `MetricName(getClass, "requests")`.
  */
-class MetricName private (val name: String) {
+class QualifiedName private (val name: String) {
 
   /**
    * Extend a metric name.
@@ -61,8 +61,8 @@ class MetricName private (val name: String) {
    * @param names the name parts to append, `null`s are filtered out
    * @return the extended metric name
    */
-  def append(names: String*): MetricName =
-    new MetricName((name.split('.') ++ names.filter(_ != null)).filter(_.nonEmpty).mkString("."))
+  def append(names: String*): QualifiedName =
+    new QualifiedName((name.split('.') ++ names.filter(_ != null)).filter(_.nonEmpty).mkString("."))
 
-  def +(subname: MetricName): MetricName = append(subname.name)
+  def +(subname: QualifiedName): QualifiedName = append(subname.name)
 }

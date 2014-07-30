@@ -22,28 +22,20 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.{FunSpec, OneInstancePerTest}
 
 @RunWith(classOf[JUnitRunner])
-class MetricNameSpec extends FunSpec with OneInstancePerTest {
+class QualifiedNameSpec extends FunSpec with OneInstancePerTest {
 
   describe("MetricName object") {
-    it("concatenates names with a period as separator") {
-      MetricName(classOf[MetricName], "part1", "part2").name should equal ("imperial.MetricName.part1.part2")
-    }
-
-    it("skips nulls") {
-      MetricName(classOf[MetricName], "part1", null, "part3").name should equal ("imperial.MetricName.part1.part3")
-    }
-
     it("supports closures") {
-      val foo: String => MetricName = s => MetricName(this.getClass)
+      val foo: String => QualifiedName = s => QualifiedName(this.getClass)
       foo("").name should equal ("imperial.MetricNameSpec")
     }
 
     it("supports objects") {
-      MetricNameSpec.ref.name should equal ("imperial.MetricNameSpec")
+      QualifiedNameSpec.ref.name should equal ("imperial.MetricNameSpec")
     }
 
     it("supports nested objects") {
-      MetricNameSpec.nestedRef.name should equal ("imperial.MetricNameSpec.Nested")
+      QualifiedNameSpec.nestedRef.name should equal ("imperial.MetricNameSpec.Nested")
     }
 
     it("supports packages") {
@@ -53,19 +45,19 @@ class MetricNameSpec extends FunSpec with OneInstancePerTest {
 
   describe("MetricName") {
     it("appends names with a period as separator") {
-      MetricName(classOf[MetricName]).append("part1", "part2").name should equal ("imperial.MetricName.part1.part2")
+      QualifiedName(classOf[QualifiedName]).append("part1", "part2").name should equal ("imperial.MetricName.part1.part2")
     }
 
     it("skips nulls") {
-      MetricName(classOf[MetricName]).append("part1", null, "part3").name should equal ("imperial.MetricName.part1.part3")
+      QualifiedName(classOf[QualifiedName]).append("part1", null, "part3").name should equal ("imperial.MetricName.part1.part3")
     }
   }
 }
 
-object MetricNameSpec {
+object QualifiedNameSpec {
   object Nested {
-    val ref: MetricName = MetricName(this.getClass)
+    val ref: QualifiedName = QualifiedName(this.getClass)
   }
-  private val ref: MetricName = MetricName(this.getClass)
-  private val nestedRef: MetricName = Nested.ref
+  private val ref: QualifiedName = QualifiedName(this.getClass)
+  private val nestedRef: QualifiedName = Nested.ref
 }
