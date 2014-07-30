@@ -23,7 +23,7 @@ import com.codahale.metrics.health.HealthCheck
 /** Builds and registering metrics. */
 trait Armoury {
 
-  def baseName: MetricName
+  def baseName: QualifiedName
 
   /** Registers a new gauge metric. */
   def gauge[A](name: String)(f: => A): Gauge[A]
@@ -45,8 +45,8 @@ trait Armoury {
   def rootBuilder: Armoury
   def parentBuilder: Armoury
   
-  def prefixedWith(nestedBase: MetricName): Armoury = new NestedArmoury(this, baseName + nestedBase)
-  def prefixedWith(nestedBase: Class[_]): Armoury = new NestedArmoury(this, baseName + MetricName(nestedBase))
+  def prefixedWith(nestedBase: QualifiedName): Armoury = new NestedArmoury(this, baseName + nestedBase)
+  def prefixedWith(nestedBase: Class[_]): Armoury = new NestedArmoury(this, baseName + QualifiedName(nestedBase))
 //  def prefixedWith(base: akka.actor.ActorPath): MetricBuilder
   def prefixedWith(nestedBase: String): Armoury = new NestedArmoury(this, baseName.append(nestedBase))
 }
@@ -54,10 +54,10 @@ trait Armoury {
 trait RootArmoury extends Armoury {
   def rootBuilder: Armoury = this
   def parentBuilder: Armoury = this
-  val baseName: MetricName = MetricName("")
+  val baseName: QualifiedName = QualifiedName("")
 }
 
-class NestedArmoury(val parentBuilder: Armoury, val baseName: MetricName) extends Armoury {
+class NestedArmoury(val parentBuilder: Armoury, val baseName: QualifiedName) extends Armoury {
 
   def rootBuilder: Armoury = parentBuilder.rootBuilder
 

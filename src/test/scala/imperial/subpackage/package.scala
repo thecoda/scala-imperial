@@ -1,6 +1,6 @@
 package imperial
 
 package object subpackage {
-  /** Used in [[MetricNameSpec]]. */
-  val ref: MetricName = MetricName(this.getClass)
+  /** Used in [[QualifiedNameSpec]]. */
+  val ref: QualifiedName = QualifiedName(this.getClass)
 }

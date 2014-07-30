@@ -27,15 +27,15 @@ class QualifiedNameSpec extends FunSpec with OneInstancePerTest {
   describe("MetricName object") {
     it("supports closures") {
       val foo: String => QualifiedName = s => QualifiedName(this.getClass)
-      foo("").name should equal ("imperial.MetricNameSpec")
+      foo("").name should equal ("imperial.QualifiedNameSpec")
     }
 
     it("supports objects") {
-      QualifiedNameSpec.ref.name should equal ("imperial.MetricNameSpec")
+      QualifiedNameSpec.ref.name should equal ("imperial.QualifiedNameSpec")
     }
 
     it("supports nested objects") {
-      QualifiedNameSpec.nestedRef.name should equal ("imperial.MetricNameSpec.Nested")
+      QualifiedNameSpec.nestedRef.name should equal ("imperial.QualifiedNameSpec.Nested")
     }
 
     it("supports packages") {
@@ -43,13 +43,13 @@ class QualifiedNameSpec extends FunSpec with OneInstancePerTest {
     }
   }
 
-  describe("MetricName") {
+  describe("QualifiedName") {
     it("appends names with a period as separator") {
-      QualifiedName(classOf[QualifiedName]).append("part1", "part2").name should equal ("imperial.MetricName.part1.part2")
+      QualifiedName(classOf[QualifiedName]).append("part1", "part2").name should equal ("imperial.QualifiedName.part1.part2")
     }
 
     it("skips nulls") {
-      QualifiedName(classOf[QualifiedName]).append("part1", null, "part3").name should equal ("imperial.MetricName.part1.part3")
+      QualifiedName(classOf[QualifiedName]).append("part1", null, "part3").name should equal ("imperial.QualifiedName.part1.part3")
     }
   }
 }

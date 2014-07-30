@@ -25,18 +25,20 @@ object QualifiedName {
    * such as objects and closures.
    *
    * @param metricOwner the class that 'owns' the metric
-   * @param names the name parts to append, `null`s are filtered out
    * @return a metric (base)name
    */
-  def apply(metricOwner: Class[_], names: String*): QualifiedName =
-    new QualifiedName(removeScalaParts(metricOwner.getName)).append(names: _*)
+  def apply(metricOwner: Class[_]): QualifiedName =
+    new QualifiedName(removeScalaParts(metricOwner.getName))
 
   // Example weird class name: TestContext$$anonfun$2$$anonfun$apply$TestObject$2$
-  private def removeScalaParts(s: String) =
-    s.replaceAllLiterally("$$anonfun", ".")
-     .replaceAllLiterally("$apply", ".")
-     .replaceAll("""\$\d*""", ".")
-     .replaceAllLiterally(".package.", ".")
+  private def removeScalaParts(s: String) = {
+    val withReplacements =
+      s.replaceAllLiterally("$$anonfun", ".")
+      .replaceAllLiterally("$apply", ".")
+      .replaceAll( """\$\d*""", ".")
+      .replaceAllLiterally(".package.", ".")
+    if(withReplacements.endsWith(".")) withReplacements.init else withReplacements
+  }
 
   /**
    * Directly create a metrics name from a [[String]].

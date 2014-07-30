@@ -16,7 +16,7 @@
 
 package imperial.mixins
 
-import imperial.mocks.{MockMetricBuilder, MockTimer}
+import imperial.mocks.{MockArmoury, MockTimer}
 import org.junit.runner.RunWith
 import org.scalatest.Matchers._
 import org.scalatest.FlatSpec
@@ -34,7 +34,7 @@ class FutureMetricsSpec extends FlatSpec {
   }
 
   trait WithMockMetrics extends FutureMetrics with ImperialInstrumented {
-    val rootBuilder = new MockMetricBuilder
+    val armoury = new MockArmoury
   }
 
   "A future timer" should "time an execution" in new WithMockMetrics {

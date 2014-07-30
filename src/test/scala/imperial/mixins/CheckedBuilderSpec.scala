@@ -37,7 +37,7 @@ class HealthCheckSpec extends FunSpec {
     it ("registers the created checker") {
       val checkOwner = newCheckOwner
       val check = checkOwner.createBooleanHealthCheck { true }
-      verify(checkOwner.registry).register("imperial.mixins.CheckOwner.test", check)
+      verify(checkOwner.healthcheckRegistry).register("imperial.mixins.CheckOwner.test", check)
     }
 
     it("build health checks that call the provided checker") {
@@ -119,14 +119,6 @@ class HealthCheckSpec extends FunSpec {
       check.execute() should be (Result.unhealthy(exception))
     }
 
-    it("supports override of metric base name") {
-      val checkOwner = new CheckOwner() {
-        override lazy val metricBaseName: MetricName = MetricName("OverriddenMetricBaseName")
-      }
-      val check = checkOwner.createBooleanHealthCheck { true }
-      verify(checkOwner.registry).register("OverriddenMetricBaseName.test", check)
-    }
-
     it("supports inline Either checker alternating success and failure") {
       // Tests an inline block because of https://github.com/erikvanoosten/metrics-scala/issues/42 and
       // https://issues.scala-lang.org/browse/SI-3237
@@ -151,35 +143,38 @@ private trait SimpleChecker {
   def check(): Boolean
 }
 
-private class CheckOwner() extends ImperialHealthChecked {
-  val registry: HealthCheckRegistry = mock[HealthCheckRegistry]
+private class CheckOwner() extends ImperialInstrumented {
+  val healthcheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
+  def armoury = Armoury.wrap(null, healthcheckRegistry)
+
+
 
   // Unfortunately we need a helper method for each supported type. If we wanted a single helper method,
   // we would need to repeat the magnet pattern right here in a test class :(
 
   def createBooleanHealthCheck(checker: => Boolean): HealthCheck =
-    healthCheck("test", "FAIL") { checker }
+    metrics.healthCheck("test", "FAIL") { checker }
 
   def createImplicitBooleanHealthCheck(checker: => Outcome): HealthCheck =
-    healthCheck("test", "FAIL") { checker }
+    metrics.healthCheck("test", "FAIL") { checker }
 
   def createTryHealthCheck(checker: => Try[_]): HealthCheck =
-    healthCheck("test", "FAIL") { checker }
+    metrics.healthCheck("test", "FAIL") { checker }
 
   def createEitherHealthCheck(checker: => Either[_, _]): HealthCheck =
-    healthCheck("test", "FAIL") { checker }
+    metrics.healthCheck("test", "FAIL") { checker }
 
   def createResultHealthCheck(checker: => Result): HealthCheck =
-    healthCheck("test", "FAIL") { checker }
+    metrics.healthCheck("test", "FAIL") { checker }
 
   def createThrowingHealthCheck(checkerFailure: => Throwable): HealthCheck =
-    healthCheck("test", "FAIL") {
+    metrics.healthCheck("test", "FAIL") {
       def alwaysFails(): Boolean = throw checkerFailure
       alwaysFails()
     }
 
   def createCheckerHealthCheck(checker: => SimpleChecker): HealthCheck =
-    healthCheck("test", "FAIL") { checker.check() }
+    metrics.healthCheck("test", "FAIL") { checker.check() }
 }
 
 /** Used to test implicit conversion to boolean. */

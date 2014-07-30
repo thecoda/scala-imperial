@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package imperial.mixins
-
-import imperial.{RootMetricBuilder, MetricBuilder}
+package imperial
+package mixins
 
 /**
  * The mixin trait for creating a class which is instrumented with metrics.
@@ -52,14 +51,15 @@ import imperial.{RootMetricBuilder, MetricBuilder}
  * }
  * }}}
  */
-trait ImperialInstrumented extends ImperialBase {
+trait ImperialInstrumented {
 
-  /** The MetricRegistry where created metrics are registered. */
-  def rootBuilder: RootMetricBuilder
+  /** The Armoury where created measures are registered. */
+  def armoury: RootArmoury
 
-  private[this] lazy val classPathedMetricBuilder = rootBuilder atBase qualifiedClassBaseName
+//  lazy val qualifiedClassBaseName: QualifiedName = QualifiedName(getClass)
+//  private[this] lazy val classPathedMetricBuilder = imperial prefixedWith qualifiedClassBaseName
 
   /** The MetricBuilder that can be used for creating timers, counters, etc. */
-  def metrics: MetricBuilder = classPathedMetricBuilder
+  def metrics: Armoury = classPathedMetricBuilder
 
 }

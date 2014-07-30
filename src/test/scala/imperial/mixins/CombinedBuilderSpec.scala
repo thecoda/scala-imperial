@@ -24,7 +24,7 @@ import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import imperial.measures.Counter
-import imperial.MetricBuilder
+import imperial.Armoury
 
 @RunWith(classOf[JUnitRunner])
 class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
@@ -37,20 +37,20 @@ class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
       verify(combinedBuilder.metricRegistry).counter("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.cnt")
 
       val check = combinedBuilder.createBooleanHealthCheck { true }
-      verify(combinedBuilder.registry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
+      verify(combinedBuilder.healthCheckRegistry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
     }
   }
 
-  private class CombinedBuilder() extends ImperialInstrumented with ImperialHealthChecked {
+  private class CombinedBuilder() extends ImperialInstrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
-    val registry: HealthCheckRegistry = mock[HealthCheckRegistry]
+    val healthCheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
 
-    val rootBuilder = MetricBuilder wrap metricRegistry
+    val armoury = Armoury.wrap(metricRegistry, healthCheckRegistry)
 
     def createCounter(): Counter = metrics.counter("cnt")
 
     def createBooleanHealthCheck(checker: Boolean): HealthCheck =
-      healthCheck("test", "FAIL") { checker }
+      metrics.healthCheck("test", "FAIL") { checker }
   }
 
 }

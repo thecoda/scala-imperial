@@ -19,16 +19,16 @@ package imperial.mixins
 import akka.actor.Actor
 import akka.enhancement.PublicAroundReceive
 import imperial.measures.{Timer, Meter, Counter}
-import imperial.MetricName
+import imperial.QualifiedName
 
 trait ImperialInstrumentedActor extends Actor with PublicAroundReceive with ImperialInstrumented {
-  private[this] lazy val actorPathBaseName = MetricName(getClass)
+  private[this] lazy val actorPathBaseName = QualifiedName(getClass)
 
   //need for ImperialBase support of healthchecks
   // TODO: this can be removed once healthcheck is folded into ImperialInstrumented
-  override def metricBaseName: MetricName = actorPathBaseName
+  override def metricBaseName: QualifiedName = actorPathBaseName
 
-  private[this] lazy val actorPathedMetricBuilder = rootBuilder atBase actorPathBaseName
+  private[this] lazy val actorPathedMetricBuilder = armoury prefixedWith actorPathBaseName
 
   //Dump the class name into a gauge, as we're naming off the actor path
   metrics.gauge("classname"){qualifiedClassBaseName.name}
@@ -59,7 +59,7 @@ trait ImperialInstrumentedActor extends Actor with PublicAroundReceive with Impe
  */
 trait CountReceives extends ImperialInstrumentedActor {
 
-  def receiveCounterName: String = MetricName(getClass).append("receiveCounter").name
+  def receiveCounterName: String = QualifiedName(getClass).append("receiveCounter").name
   lazy val counter: Counter = metrics.counter(receiveCounterName)
 
   override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = {
@@ -93,7 +93,7 @@ trait CountReceives extends ImperialInstrumentedActor {
  */
 trait TimeReceives extends ImperialInstrumentedActor {
 
-  def receiveTimerName: String = MetricName(getClass).append("receiveTimer").name
+  def receiveTimerName: String = QualifiedName(getClass).append("receiveTimer").name
   lazy val timer: Timer = metrics.timer(receiveTimerName)
 
   override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = timer.time(
@@ -126,7 +126,7 @@ trait TimeReceives extends ImperialInstrumentedActor {
  */
 trait MeterReceiveExceptions extends ImperialInstrumentedActor {
 
-  def receiveExceptionMeterName: String = MetricName(getClass).append("receiveExceptionMeter").name
+  def receiveExceptionMeterName: String = QualifiedName(getClass).append("receiveExceptionMeter").name
   lazy val meter: Meter = metrics.meter(receiveExceptionMeterName)
 
   override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = {

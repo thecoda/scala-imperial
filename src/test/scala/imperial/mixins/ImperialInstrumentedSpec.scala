@@ -23,7 +23,7 @@ import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import imperial.measures.Counter
-import imperial.{MetricBuilder, MetricName}
+import imperial.{Armoury, QualifiedName}
 
 @RunWith(classOf[JUnitRunner])
 class ImperialInstrumentedSpec extends FunSpec with OneInstancePerTest {
@@ -38,7 +38,7 @@ class ImperialInstrumentedSpec extends FunSpec with OneInstancePerTest {
 
   private class MetricOwner() extends ImperialInstrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
-    val rootBuilder = MetricBuilder wrap metricRegistry
+    val armoury = Armoury.wrap(metricRegistry, null)
 
     def createCounter(): Counter = metrics.counter("cnt")
   }
