@@ -23,7 +23,7 @@ import org.mockito.Mockito.{verify, when}
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 
 object TimerSpec {
   case class Result()
@@ -35,48 +35,43 @@ object TimerSpec {
 }
 
 @RunWith(classOf[JUnitRunner])
-class TimerSpec extends FunSpec with OneInstancePerTest {
+class TimerSpec extends FlatSpec with OneInstancePerTest {
 
   import TimerSpec._
+  val metric = mock[com.codahale.metrics.Timer]
+  val timer = Timer(metric)
+  val context = mock[com.codahale.metrics.Timer.Context]
+  when(metric.time()).thenReturn(context)
 
-  describe("A timer") {
-    val metric = mock[com.codahale.metrics.Timer]
-    val timer = Timer(metric)
-    val context = mock[com.codahale.metrics.Timer.Context]
-    when(metric.time()).thenReturn(context)
+  "A timer" should "time a passed closure" in {
+    timer.time { 1 }
+    verify(metric).time()
+    verify(context).stop()
+  }
 
-    it("times the passed closure") {
-      timer.time { 1 }
+  it should "update the underlying metric" in {
+    timer.update(1L,TimeUnit.MILLISECONDS)
+    verify(metric).update(1L,TimeUnit.MILLISECONDS)
+  }
 
-      verify(metric).time()
-      verify(context).stop()
-    }
+  it should "increment time execution of partial function" in {
+    val pf: PartialFunction[String,String] = { case "test" => "test" }
+    val wrapped = timer.timePF(pf)
+    wrapped("test") should equal ("test")
+    verify(metric).time()
+    verify(context).stop()
+    wrapped.isDefinedAt("x") should be (false)
+  }
 
-    it("updates the underlying metric") {
-      timer.update(1L,TimeUnit.MILLISECONDS)
+  it should "correctly infers the type" in {
+    val someString = "someString"
+    val timed = timer.time(myFunc(someString))
+    timed.isInstanceOf[List[_]] should be (true)
+    timed(0).isInstanceOf[Result] should be (true)
 
-      verify(metric).update(1L,TimeUnit.MILLISECONDS)
-    }
-
-    it("should increment time execution of partial function") {
-      val pf: PartialFunction[String,String] = { case "test" => "test" }
-      val wrapped = timer.timePF(pf)
-      wrapped("test") should equal ("test")
-      verify(metric).time()
-      verify(context).stop()
-      wrapped.isDefinedAt("x") should be (false)
-    }
-
-    it("correctly infers the type") {
-      val someString = "someString"
-      val timed = timer.time(myFunc(someString))
-      timed.isInstanceOf[List[_]] should be (true)
-      timed(0).isInstanceOf[Result] should be (true)
-
-      val pf: PartialFunction[String,String] = { case x: String => x }
-      val timedPF = timer.timePF( pf )
-      timedPF.isInstanceOf[PartialFunction[_,_]] should be (true)
-      timedPF("x") should be ("x")
-    }
+    val pf: PartialFunction[String,String] = { case x: String => x }
+    val timedPF = timer.timePF( pf )
+    timedPF.isInstanceOf[PartialFunction[_,_]] should be (true)
+    timedPF("x") should be ("x")
   }
 }

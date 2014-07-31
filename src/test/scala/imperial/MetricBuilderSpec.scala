@@ -16,7 +16,6 @@
 
 package imperial
 
-import com.codahale.metrics.MetricRegistry
 import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.scalatest.Matchers._

@@ -19,34 +19,29 @@ package imperial.measures
 import org.junit.runner.RunWith
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.Matchers._
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 
 @RunWith(classOf[JUnitRunner])
-class HistogramSpec extends FunSpec with OneInstancePerTest {
-  describe("A histogram") {
-    val metric = mock[com.codahale.metrics.Histogram]
-    val histogram = Histogram(metric)
+class HistogramSpec extends FlatSpec with OneInstancePerTest {
+  val metric = mock[com.codahale.metrics.Histogram]
+  val histogram = Histogram(metric)
 
-    it("updates the underlying histogram with an int") {
-      histogram += 12
+  "A histogram" should "updates the underlying histogram with an int" in {
+    histogram += 12
+    verify(metric).update(12)
+  }
 
-      verify(metric).update(12)
-    }
+  it should "update the underlying histogram with a long" in {
+    histogram += 12L
+    verify(metric).update(12L)
+  }
 
-    it("updates the underlying histogram with a long") {
-      histogram += 12L
-
-      verify(metric).update(12L)
-    }
-
-    it("retrieves a snapshot for statistics") {
-      val snapshot = mock[com.codahale.metrics.Snapshot]
-      when(snapshot.getMax).thenReturn(1L)
-      when(metric.getSnapshot).thenReturn(snapshot)
-
-      histogram.max should equal (1L)
-    }
+  it should "retrieve a snapshot for statistics" in {
+    val snapshot = mock[com.codahale.metrics.Snapshot]
+    when(snapshot.getMax).thenReturn(1L)
+    when(metric.getSnapshot).thenReturn(snapshot)
+    histogram.max should equal (1L)
   }
 }

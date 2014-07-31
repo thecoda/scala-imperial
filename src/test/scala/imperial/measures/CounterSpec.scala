@@ -19,41 +19,36 @@ package imperial.measures
 import org.junit.runner.RunWith
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.Matchers._
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 
 @RunWith(classOf[JUnitRunner])
-class CounterSpec extends FunSpec with OneInstancePerTest {
-  describe("A counter") {
-    val metric = mock[com.codahale.metrics.Counter]
-    val counter = Counter(metric)
+class CounterSpec extends FlatSpec with OneInstancePerTest {
+  val metric = mock[com.codahale.metrics.Counter]
+  val counter = Counter(metric)
 
-    it("should increment the underlying metric by an arbitrary amount") {
-      counter += 12
+  "A counter" should "increment the underlying metric by an arbitrary amount" in {
+    counter += 12
+    verify(metric).inc(12)
+  }
 
-      verify(metric).inc(12)
-    }
+  it should "decrement the underlying metric by an arbitrary amount" in {
+    counter -= 12
+    verify(metric).dec(12)
+  }
 
-    it("should decrement the underlying metric by an arbitrary amount") {
-      counter -= 12
+  it should "consult the underlying counter for current count" in {
+    when(metric.getCount).thenReturn(1L)
+    counter.count should equal (1)
+    verify(metric).getCount
+  }
 
-      verify(metric).dec(12)
-    }
-
-    it("should consult the underlying counter for current count") {
-      when(metric.getCount).thenReturn(1L)
-
-      counter.count should equal (1)
-      verify(metric).getCount
-    }
-
-    it("should increment counter upon execution of partial function") {
-      val pf: PartialFunction[String, String] = { case "test" => "test" }
-      val wrapped = counter.count(pf)
-      wrapped("test") should equal ("test")
-      verify(metric).inc(1)
-      wrapped.isDefinedAt("x") should be (false)
-    }
+  it should "increment counter upon execution of partial function" in {
+    val pf: PartialFunction[String, String] = { case "test" => "test" }
+    val wrapped = counter.count(pf)
+    wrapped("test") should equal ("test")
+    verify(metric).inc(1)
+    wrapped.isDefinedAt("x") should be (false)
   }
 }

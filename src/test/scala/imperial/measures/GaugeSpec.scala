@@ -20,26 +20,22 @@ import imperial.wrappers.codahale.CodaHaleBackedGauge
 import org.junit.runner.RunWith
 import org.mockito.Mockito.when
 import org.scalatest.Matchers._
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 
 @RunWith(classOf[JUnitRunner])
-class GaugeSpec extends FunSpec with OneInstancePerTest {
-  describe("A gauge") {
-    val metric = mock[com.codahale.metrics.Gauge[Int]]
-    val gauge = new CodaHaleBackedGauge(metric)
+class GaugeSpec extends FlatSpec with OneInstancePerTest {
+  val metric = mock[com.codahale.metrics.Gauge[Int]]
+  val gauge = new CodaHaleBackedGauge(metric)
+
+  "A gauge" should "invoke the underlying function for sugar factory" in {
+    val sugared = Gauge({ 1 })
+    sugared.value should equal (1)
+  }
     
-    it("invokes underlying function for sugar factory") {
-      val sugared = Gauge({ 1 })
-      
-      sugared.value should equal (1)
-    }
-    
-    it("invokes getValue on underlying gauge") {
-      when(metric.getValue).thenReturn(1)
-      
-      gauge.value should equal (1)
-    }
+  it should "invoke getValue on the underlying gauge" in {
+    when(metric.getValue).thenReturn(1)
+    gauge.value should equal (1)
   }
 }

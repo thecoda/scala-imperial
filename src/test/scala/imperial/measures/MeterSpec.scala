@@ -19,37 +19,35 @@ package imperial.measures
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.scalatest.Matchers._
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 
 @RunWith(classOf[JUnitRunner])
-class MeterSpec extends FunSpec with OneInstancePerTest {
-  describe("A meter") {
-    val metric = mock[com.codahale.metrics.Meter]
-    val meter = Meter(metric)
+class MeterSpec extends FlatSpec with OneInstancePerTest {
+  val metric = mock[com.codahale.metrics.Meter]
+  val meter = Meter(metric)
 
-    it("marks the underlying metric") {
-      meter.mark()
-      verify(metric).mark()
-    }
+  "A meter" should "mark the underlying metric" in {
+    meter.mark()
+    verify(metric).mark()
+  }
 
-    it("marks the underlying metric by an arbitrary amount") {
-      meter.mark(12)
-      verify(metric).mark(12)
-    }
+  it should "mark the underlying metric by an arbitrary amount" in {
+    meter.mark(12)
+    verify(metric).mark(12)
+  }
 
-    it("increments meter on exception when exceptionMeter is used") {
-      a [RuntimeException] should be thrownBy { meter.exceptionMarker( throw new RuntimeException() ) }
-      verify(metric).mark()
-    }
+  it should "increment the meter on exception when exceptionMeter is used" in {
+    a [RuntimeException] should be thrownBy { meter.exceptionMarker( throw new RuntimeException() ) }
+    verify(metric).mark()
+  }
 
-    it("should increment time execution of partial function") {
-      val pf: PartialFunction[String,String] = { case "test" => throw new RuntimeException() }
-      val wrapped = meter.exceptionMarkerPF(pf)
-      a [RuntimeException] should be thrownBy { wrapped("test") }
-      verify(metric).mark()
-      wrapped.isDefinedAt("x") should be (false)
-    }
+  it should "increment time execution of partial function" in {
+    val pf: PartialFunction[String,String] = { case "test" => throw new RuntimeException() }
+    val wrapped = meter.exceptionMarkerPF(pf)
+    a [RuntimeException] should be thrownBy { wrapped("test") }
+    verify(metric).mark()
+    wrapped.isDefinedAt("x") should be (false)
   }
 }
