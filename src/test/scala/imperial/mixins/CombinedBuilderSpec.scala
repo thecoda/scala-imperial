@@ -21,32 +21,30 @@ import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
 import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import imperial.measures.Counter
 import imperial.Armoury
 
 @RunWith(classOf[JUnitRunner])
-class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
+class CombinedBuilderSpec extends FlatSpec with OneInstancePerTest {
 
-  describe("InstrumentedBuilder combined with CheckedBuilder") {
-    it("uses owner class as metric base name") {
-      val combinedBuilder = new CombinedBuilder
+  "InstrumentedBuilder combined with CheckedBuilder" should "uses owner class as metric base name" in {
+    val combinedBuilder = new CombinedBuilder
 
-      combinedBuilder.createCounter()
-      verify(combinedBuilder.metricRegistry).counter("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.cnt")
+    combinedBuilder.createCounter()
+    verify(combinedBuilder.metricRegistry).counter("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.cnt")
 
-      val check = combinedBuilder.createBooleanHealthCheck { true }
-      verify(combinedBuilder.healthCheckRegistry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
-    }
+    val check = combinedBuilder.createBooleanHealthCheck { true }
+    verify(combinedBuilder.healthCheckRegistry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
   }
 
   private class CombinedBuilder() extends Instrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
     val healthCheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
 
-    val armoury =  new CodaHaleBackedArmoury(metricRegistry, healthCheckRegistry) prefixedWith getClass
+    val armoury: Armoury =  new CodaHaleBackedArmoury(metricRegistry, healthCheckRegistry) prefixedWith getClass
 
     def createCounter(): Counter = armoury.counter("cnt")
 

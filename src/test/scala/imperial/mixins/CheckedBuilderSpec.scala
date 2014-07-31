@@ -25,7 +25,7 @@ import com.codahale.metrics.health.HealthCheck.Result
 import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
 import org.junit.runner.RunWith
 import org.mockito.Mockito.{verify, when}
-import org.scalatest.FunSpec
+import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
@@ -33,108 +33,106 @@ import scala.util.Try
 
 
 @RunWith(classOf[JUnitRunner])
-class HealthCheckSpec extends FunSpec {
+class HealthCheckSpec extends FlatSpec {
 
-  describe("healthCheck factory method") {
-    it ("registers the created checker") {
-      val checkOwner = newCheckOwner
-      val check = checkOwner.createBooleanHealthCheck { true }
-      verify(checkOwner.healthcheckRegistry).register("imperial.mixins.CheckOwner.test", check)
-    }
+  "The healthCheck factory method" should "register the created checker" in {
+    val checkOwner = newCheckOwner
+    val check = checkOwner.createBooleanHealthCheck { true }
+    verify(checkOwner.healthcheckRegistry).register("imperial.mixins.CheckOwner.test", check)
+  }
 
-    it("build health checks that call the provided checker") {
-      val mockChecker = mock[SimpleChecker]
-      when(mockChecker.check()).thenReturn(true, false, true, false)
-      val check = newCheckOwner.createCheckerHealthCheck(mockChecker)
-      check.execute() should be (Result.healthy())
-      check.execute() should be (Result.unhealthy("FAIL"))
-      check.execute() should be (Result.healthy())
-      check.execute() should be (Result.unhealthy("FAIL"))
-    }
+  it should "build health checks that call the provided checker" in {
+    val mockChecker = mock[SimpleChecker]
+    when(mockChecker.check()).thenReturn(true, false, true, false)
+    val check = newCheckOwner.createCheckerHealthCheck(mockChecker)
+    check.execute() should be (Result.healthy())
+    check.execute() should be (Result.unhealthy("FAIL"))
+    check.execute() should be (Result.healthy())
+    check.execute() should be (Result.unhealthy("FAIL"))
+  }
 
-    it("supports Boolean checker returning true") {
-      val check = newCheckOwner.createBooleanHealthCheck { true }
-      check.execute() should be (Result.healthy())
-    }
+  it should "support a Boolean checker returning true" in {
+    val check = newCheckOwner.createBooleanHealthCheck { true }
+    check.execute() should be (Result.healthy())
+  }
 
-    it("supports Boolean checker returning false") {
-      val check = newCheckOwner.createBooleanHealthCheck { false }
-      check.execute() should be (Result.unhealthy("FAIL"))
-    }
+  it should "support a Boolean checker returning false" in {
+    val check = newCheckOwner.createBooleanHealthCheck { false }
+    check.execute() should be (Result.unhealthy("FAIL"))
+  }
 
-    it("supports Boolean checker returning true implicitly") {
-      val check = newCheckOwner.createImplicitBooleanHealthCheck { Success }
-      check.execute() should be (Result.healthy())
-    }
+  it should "support a Boolean checker returning true implicitly" in {
+    val check = newCheckOwner.createImplicitBooleanHealthCheck { Success }
+    check.execute() should be (Result.healthy())
+  }
 
-    it("supports Boolean checker returning false implicitly") {
-      val check = newCheckOwner.createImplicitBooleanHealthCheck { Failure }
-      check.execute() should be (Result.unhealthy("FAIL"))
-    }
+  it should "support a Boolean checker returning false implicitly" in {
+    val check = newCheckOwner.createImplicitBooleanHealthCheck { Failure }
+    check.execute() should be (Result.unhealthy("FAIL"))
+  }
 
-    it("supports Try checker returning Success[Long]") {
-      val check = newCheckOwner.createTryHealthCheck { Try(123L) }
-      check.execute() should be (Result.healthy("123"))
-    }
+  it should "support a Try checker returning Success[Long]" in {
+    val check = newCheckOwner.createTryHealthCheck { Try(123L) }
+    check.execute() should be (Result.healthy("123"))
+  }
 
-    it("supports Try checker returning Failure") {
-      val exception: IllegalArgumentException = new IllegalArgumentException()
-      val check = newCheckOwner.createTryHealthCheck { Try(throw exception) }
-      check.execute() should be (Result.unhealthy(exception))
-    }
+  it should "support a Try checker returning Failure" in {
+    val exception: IllegalArgumentException = new IllegalArgumentException()
+    val check = newCheckOwner.createTryHealthCheck { Try(throw exception) }
+    check.execute() should be (Result.unhealthy(exception))
+  }
 
-    it("supports Either checker returning Right[Long]") {
-      val check = newCheckOwner.createEitherHealthCheck { Right(123L) }
-      check.execute() should be (Result.healthy("123"))
-    }
+  it should "support an Either checker returning Right[Long]" in {
+    val check = newCheckOwner.createEitherHealthCheck { Right(123L) }
+    check.execute() should be (Result.healthy("123"))
+  }
 
-    it("supports Either checker returning Left[Boolean]") {
-      val check = newCheckOwner.createEitherHealthCheck { Left(true) }
-      check.execute() should be (Result.unhealthy("true"))
-    }
+  it should "support an Either checker returning Left[Boolean]" in {
+    val check = newCheckOwner.createEitherHealthCheck { Left(true) }
+    check.execute() should be (Result.unhealthy("true"))
+  }
 
-    it("supports Either checker returning Right[String]") {
-      val check = newCheckOwner.createEitherHealthCheck { Right("I am alright") }
-      check.execute() should be (Result.healthy("I am alright"))
-    }
+  it should "support an Either checker returning Right[String]" in {
+    val check = newCheckOwner.createEitherHealthCheck { Right("I am alright") }
+    check.execute() should be (Result.healthy("I am alright"))
+  }
 
-    it("supports Either checker returning Left[String]") {
-      val check = newCheckOwner.createEitherHealthCheck { Left("Oops, I am not fine") }
-      check.execute() should be (Result.unhealthy("Oops, I am not fine"))
-    }
+  it should "support an Either checker returning Left[String]" in {
+    val check = newCheckOwner.createEitherHealthCheck { Left("Oops, I am not fine") }
+    check.execute() should be (Result.unhealthy("Oops, I am not fine"))
+  }
 
-    it("supports Either checker returning Left[Throwable]") {
-      val exception: IllegalArgumentException = new IllegalArgumentException()
-      val check = newCheckOwner.createEitherHealthCheck { Left(exception) }
-      check.execute() should be (Result.unhealthy(exception))
-    }
+  it should "support an Either checker returning Left[Throwable]" in {
+    val exception: IllegalArgumentException = new IllegalArgumentException()
+    val check = newCheckOwner.createEitherHealthCheck { Left(exception) }
+    check.execute() should be (Result.unhealthy(exception))
+  }
 
-    it("supports Result checker returning Result unchanged") {
-      val result = Result.healthy()
-      val check = newCheckOwner.createResultHealthCheck { result }
-      check.execute() should be theSameInstanceAs (result)
-    }
+  it should "support a Result checker returning Result unchanged" in {
+    val result = Result.healthy()
+    val check = newCheckOwner.createResultHealthCheck { result }
+    check.execute() should be theSameInstanceAs (result)
+  }
 
-    it("supports checker throwing an exception") {
-      val exception: IllegalArgumentException = new IllegalArgumentException()
-      val check = newCheckOwner.createThrowingHealthCheck(exception)
-      check.execute() should be (Result.unhealthy(exception))
-    }
+  it should "support a checker throwing an exception" in {
+    val exception: IllegalArgumentException = new IllegalArgumentException()
+    val check = newCheckOwner.createThrowingHealthCheck(exception)
+    check.execute() should be (Result.unhealthy(exception))
+  }
 
-    it("supports inline Either checker alternating success and failure") {
-      // Tests an inline block because of https://github.com/erikvanoosten/metrics-scala/issues/42 and
-      // https://issues.scala-lang.org/browse/SI-3237
-      var counter = 0
-      val check = newCheckOwner.createEitherHealthCheck {
-        counter += 1
-        counter match {
-          case i if i % 2 == 0 => Right(i)
-          case i => Left(i)
-        }
+  it should "support an inline Either checker alternating success and failure" in {
+    // Tests an inline block because of https://github.com/erikvanoosten/metrics-scala/issues/42 and
+    // https://issues.scala-lang.org/browse/SI-3237
+    var counter = 0
+    val check = newCheckOwner.createEitherHealthCheck {
+      counter += 1
+      counter match {
+        case i if i % 2 == 0 => Right(i)
+        case i => Left(i)
       }
-      check.execute() should be (Result.unhealthy("1"))
-      check.execute() should be (Result.healthy("2"))
     }
+    check.execute() should be (Result.unhealthy("1"))
+    check.execute() should be (Result.healthy("2"))
   }
 
   private val newCheckOwner = new CheckOwner()

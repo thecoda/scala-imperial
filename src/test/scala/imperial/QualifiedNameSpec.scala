@@ -19,38 +19,34 @@ package imperial
 import org.junit.runner.RunWith
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 
 @RunWith(classOf[JUnitRunner])
-class QualifiedNameSpec extends FunSpec with OneInstancePerTest {
+class QualifiedNameSpec extends FlatSpec with OneInstancePerTest {
 
-  describe("MetricName object") {
-    it("supports closures") {
-      val foo: String => QualifiedName = s => QualifiedName(this.getClass)
-      foo("").name should equal ("imperial.QualifiedNameSpec")
-    }
-
-    it("supports objects") {
-      QualifiedNameSpec.ref.name should equal ("imperial.QualifiedNameSpec")
-    }
-
-    it("supports nested objects") {
-      QualifiedNameSpec.nestedRef.name should equal ("imperial.QualifiedNameSpec.Nested")
-    }
-
-    it("supports packages") {
-      imperial.subpackage.ref.name should equal ("imperial.subpackage")
-    }
+  "The QualifiedName singleton" should "support closures" in {
+    val foo: String => QualifiedName = s => QualifiedName(this.getClass)
+    foo("").name should equal ("imperial.QualifiedNameSpec")
   }
 
-  describe("QualifiedName") {
-    it("appends names with a period as separator") {
-      QualifiedName(classOf[QualifiedName]).append("part1", "part2").name should equal ("imperial.QualifiedName.part1.part2")
-    }
+  it should "support objects" in {
+    QualifiedNameSpec.ref.name should equal ("imperial.QualifiedNameSpec")
+  }
 
-    it("skips nulls") {
-      QualifiedName(classOf[QualifiedName]).append("part1", null, "part3").name should equal ("imperial.QualifiedName.part1.part3")
-    }
+  it should "support nested objects" in {
+    QualifiedNameSpec.nestedRef.name should equal ("imperial.QualifiedNameSpec.Nested")
+  }
+
+  it should "support packages" in {
+    imperial.subpackage.ref.name should equal ("imperial.subpackage")
+  }
+
+  "A QualifiedName instance" should "append names with a period as separator" in {
+    QualifiedName(classOf[QualifiedName]).append("part1", "part2").name should equal ("imperial.QualifiedName.part1.part2")
+  }
+
+  it should "skip nulls" in {
+    QualifiedName(classOf[QualifiedName]).append("part1", null, "part3").name should equal ("imperial.QualifiedName.part1.part3")
   }
 }
 

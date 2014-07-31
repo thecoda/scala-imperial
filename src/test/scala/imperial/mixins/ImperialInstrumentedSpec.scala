@@ -20,26 +20,24 @@ import com.codahale.metrics.MetricRegistry
 import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import imperial.measures.Counter
-import imperial.{Armoury, QualifiedName}
+import imperial.Armoury
 
 @RunWith(classOf[JUnitRunner])
-class ImperialInstrumentedSpec extends FunSpec with OneInstancePerTest {
+class ImperialInstrumentedSpec extends FlatSpec with OneInstancePerTest {
 
-  describe("ImperialInstrumented") {
-    it("uses owner class as metric base name") {
-      val metricOwner = new MetricOwner
-      metricOwner.createCounter()
-      verify(metricOwner.metricRegistry).counter("imperial.mixins.ImperialInstrumentedSpec.MetricOwner.cnt")
-    }
+  "An ImperialInstrumented" should "use the owner class as metric base name" in {
+    val metricOwner = new MetricOwner
+    metricOwner.createCounter()
+    verify(metricOwner.metricRegistry).counter("imperial.mixins.ImperialInstrumentedSpec.MetricOwner.cnt")
   }
 
   private class MetricOwner() extends Instrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
-    val armoury =  new CodaHaleBackedArmoury(metricRegistry, null) prefixedWith getClass
+    val armoury: Armoury = new CodaHaleBackedArmoury(metricRegistry, null) prefixedWith getClass
 
     def createCounter(): Counter = armoury.counter("cnt")
   }

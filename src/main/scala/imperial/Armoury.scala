@@ -17,7 +17,6 @@
 package imperial
 
 import imperial.measures._
-import com.codahale.metrics.health.HealthCheck
 
 /** Builds and registering metrics. */
 trait Armoury {

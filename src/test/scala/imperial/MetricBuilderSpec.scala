@@ -19,13 +19,13 @@ package imperial
 import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.scalatest.Matchers._
-import org.scalatest.{FunSpec, OneInstancePerTest}
+import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import imperial.measures._
 import imperial.mixins.Instrumented
 
 @RunWith(classOf[JUnitRunner])
-class MetricBuilderSpec extends FunSpec with OneInstancePerTest {
+class MetricBuilderSpec extends FlatSpec with OneInstancePerTest {
 
   private val rootArmoury = new CodaHaleBackedArmoury
 
@@ -53,33 +53,31 @@ class MetricBuilderSpec extends FunSpec with OneInstancePerTest {
     def histogramPlusOne() { histogram += 1 }
   }
 
-  describe("Metrics configuration dsl") {
-    val underTest = new UnderTest
+  val underTest = new UnderTest
 
-    it("defines a timer") {
-      underTest.waitFor100Ms()
-      underTest.timer.min should be >= 100000000L
-    }
+  "The Metrics configuration dsl" should "defines a timer" in {
+    underTest.waitFor100Ms()
+    underTest.timer.min should be >= 100000000L
+  }
 
-    it("defines a gauge") {
-      underTest.gauge.value should equal (42)
-    }
+  it should "define a gauge" in {
+    underTest.gauge.value should equal (42)
+  }
 
-    it("defines a counter") {
-      underTest.incr()
-      underTest.counter.count should equal (1)
-    }
+  it should "define a counter" in {
+    underTest.incr()
+    underTest.counter.count should equal (1)
+  }
 
-    it("defines a histogram") {
-      underTest.histogramPlusOne()
-      underTest.histogram.count should equal (1)
-      underTest.histogram.min should equal (1)
-    }
+  it should "define a histogram" in {
+    underTest.histogramPlusOne()
+    underTest.histogram.count should equal (1)
+    underTest.histogram.min should equal (1)
+  }
 
-    it("defines a meter") {
-      underTest.meterPlusEleven()
-      underTest.meter.count should equal (11)
-    }
+  it should "define a meter" in {
+    underTest.meterPlusEleven()
+    underTest.meter.count should equal (11)
   }
 
 }
