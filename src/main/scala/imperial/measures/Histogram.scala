@@ -18,9 +18,10 @@ package imperial.measures
 
 import com.codahale.{metrics => ch}
 import imperial.`package`._
+import imperial.wrappers.codahale.CodaHaleBackedHistogram
 
 object Histogram {
-  def apply(raw: ch.Histogram): Histogram = new HistogramWrapper(raw)
+  def apply(raw: ch.Histogram): Histogram = new CodaHaleBackedHistogram(raw)
 }
 
 trait Histogram {
@@ -52,21 +53,4 @@ trait Histogram {
 }
 
 
-/**
- * A Scala façade class for Histogram.
- *
- * @see HistogramMetric
- */
-class HistogramWrapper(val raw: ch.Histogram) extends Histogram {
-  def +=(value: Long): Unit = raw update value
-  def +=(value: Int): Unit = raw update value
 
-  def count: Long = raw.getCount
-  def snapshot: Snapshot = raw.getSnapshot
-
-  def max: Long  = snapshot.getMax
-  def min: Long  = snapshot.getMin
-  def mean: Double = snapshot.getMean
-  def stdDev: Double = snapshot.getStdDev
-
-}

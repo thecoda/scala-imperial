@@ -17,6 +17,7 @@
 package imperial
 
 import com.codahale.metrics.MetricRegistry
+import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.scalatest.Matchers._
 import org.scalatest.{FunSpec, OneInstancePerTest}
@@ -27,10 +28,10 @@ import imperial.mixins.Instrumented
 @RunWith(classOf[JUnitRunner])
 class MetricBuilderSpec extends FunSpec with OneInstancePerTest {
 
-  private val testMetricRegistry = new MetricRegistry()
+  private val rootArmoury = new CodaHaleBackedArmoury
 
   class UnderTest extends Instrumented {
-    val armoury = Armoury.wrap(testMetricRegistry, null)
+    val armoury: Armoury = rootArmoury
 
     val timer     : Timer      = armoury.timer("10ms")
     val gauge     : Gauge[Int] = armoury.gauge("the answer")(value)

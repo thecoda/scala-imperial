@@ -17,9 +17,10 @@
 package imperial.measures
 
 import com.codahale.{metrics => ch}
+import imperial.wrappers.codahale.CodaHaleBackedGauge
 
 object Gauge {
-  def apply[A](f: => A): Gauge[A] = new GaugeWrapper[A](
+  def apply[A](f: => A): Gauge[A] = new CodaHaleBackedGauge[A](
     new ch.Gauge[A] { def getValue = f }
   )
 }
@@ -29,7 +30,4 @@ trait Gauge[T] {
   def value: T
 }
 
-/** A Scala façade class for Gauge. */
-class GaugeWrapper[T](val raw: ch.Gauge[T]) extends Gauge[T] {
-  def value: T = raw.getValue
-}
+

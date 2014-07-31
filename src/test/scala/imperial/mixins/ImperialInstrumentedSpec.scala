@@ -17,6 +17,7 @@
 package imperial.mixins
 
 import com.codahale.metrics.MetricRegistry
+import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.scalatest.{FunSpec, OneInstancePerTest}
@@ -38,7 +39,7 @@ class ImperialInstrumentedSpec extends FunSpec with OneInstancePerTest {
 
   private class MetricOwner() extends Instrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
-    val armoury = Armoury.wrap(metricRegistry, null) prefixedWith getClass
+    val armoury =  new CodaHaleBackedArmoury(metricRegistry, null) prefixedWith getClass
 
     def createCounter(): Counter = armoury.counter("cnt")
   }

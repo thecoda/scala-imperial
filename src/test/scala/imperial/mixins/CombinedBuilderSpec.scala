@@ -18,6 +18,7 @@ package imperial.mixins
 
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
+import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.scalatest.{FunSpec, OneInstancePerTest}
@@ -45,7 +46,7 @@ class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
     val healthCheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
 
-    val armoury = Armoury.wrap(metricRegistry, healthCheckRegistry) prefixedWith getClass
+    val armoury =  new CodaHaleBackedArmoury(metricRegistry, healthCheckRegistry) prefixedWith getClass
 
     def createCounter(): Counter = armoury.counter("cnt")
 

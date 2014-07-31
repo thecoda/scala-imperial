@@ -17,6 +17,7 @@
 package imperial.measures
 
 import com.codahale.{metrics => ch}
+import imperial.wrappers.codahale.CodaHaleBackedMeter
 
 import scala.util.control.ControlThrowable
 
@@ -52,7 +53,7 @@ object Meter {
     }
   }
 
-  def apply(raw: ch.Meter): Meter = new MeterWrapper(raw)
+  def apply(raw: ch.Meter): Meter = new CodaHaleBackedMeter(raw)
 }
 
 /**
@@ -154,16 +155,5 @@ trait Meter {
 }
 
 
-class MeterWrapper(val raw: ch.Meter) extends Meter {
 
-  def mark(): Unit = raw.mark()
-  def mark(count: Long): Unit = raw mark count
-
-  def count: Long = raw.getCount
-
-  def fifteenMinuteRate: Double = raw.getFifteenMinuteRate
-  def fiveMinuteRate: Double = raw.getFiveMinuteRate
-  def oneMinuteRate: Double = raw.getOneMinuteRate
-  def meanRate: Double = raw.getMeanRate
-}
 

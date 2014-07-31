@@ -20,9 +20,10 @@ import java.util.concurrent.TimeUnit
 
 import com.codahale.{metrics => ch}
 import imperial.`package`._
+import imperial.wrappers.codahale.CodaHaleBackedTimer
 
 object Timer {
-  def apply(raw: ch.Timer): Timer = new TimerWrapper(raw)
+  def apply(raw: ch.Timer): Timer = new CodaHaleBackedTimer(raw)
 //  type Context = ch.Timer.Context
 }
 
@@ -32,9 +33,7 @@ trait TimerContext {
   def close(): Long = stop()
 }
 
-class TimerContextWrapper(val raw: ch.Timer.Context) extends TimerContext {
-  def stop(): Long = raw.stop()
-}
+
 
 /**
  * A Scala façade class for Timer.
@@ -129,23 +128,4 @@ trait Timer {
 }
 
 
-class TimerWrapper(val raw: ch.Timer) extends Timer{
 
-
-  def update(duration: Long, unit: TimeUnit): Unit = raw.update(duration, unit)
-
-  def timerContext(): TimerContext = new TimerContextWrapper(raw.time())
-
-  def count: Long = raw.getCount
-
-  def snapshot: Snapshot = raw.getSnapshot
-  def max: Long = snapshot.getMax
-  def min: Long = snapshot.getMin
-  def mean: Double = snapshot.getMean
-  def stdDev: Double = snapshot.getStdDev
-
-  def fifteenMinuteRate: Double = raw.getFifteenMinuteRate
-  def fiveMinuteRate: Double = raw.getFiveMinuteRate
-  def meanRate: Double = raw.getMeanRate
-  def oneMinuteRate: Double = raw.getOneMinuteRate
-}

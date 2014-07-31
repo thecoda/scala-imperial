@@ -17,6 +17,7 @@
 package imperial.measures
 
 import com.codahale.{metrics => ch}
+import imperial.wrappers.codahale.CodaHaleBackedCounter
 
 object Counter {
   class CountingPf[A,B](counter: Counter, pf: PartialFunction[A,B]) extends PartialFunction[A,B] {
@@ -28,7 +29,7 @@ object Counter {
     def isDefinedAt(a: A) = pf.isDefinedAt(a)
   }
 
-  def apply(raw: ch.Counter): Counter = new CounterWrapper(raw)
+  def apply(raw: ch.Counter): Counter = new CodaHaleBackedCounter(raw)
 }
 
 
@@ -53,15 +54,4 @@ trait Counter {
   def count: Long
 }
 
-/** A Scala façade class for Counter. */
-class CounterWrapper(val raw: ch.Counter) extends Counter {
-  def count[A,B](pf: PartialFunction[A,B]): PartialFunction[A,B] =
-    new Counter.CountingPf(this, pf)
 
-  def +=(delta: Long): Unit = raw inc delta
-  def -=(delta: Long): Unit = raw dec delta
-  def inc(delta: Long = 1): Unit = raw inc delta
-  def dec(delta: Long = 1): Unit = raw dec delta
-
-  def count: Long = raw.getCount
-}

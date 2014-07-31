@@ -22,13 +22,13 @@ import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
-import imperial.RootArmoury
+import imperial.Armoury
 
 object ActorMetricsSpec {
 
   object TestFixture {
 
-    class TestActor(val armoury: RootArmoury) extends Actor with InstrumentedActor {
+    class TestActor(val armoury: Armoury) extends Actor with InstrumentedActor {
       val messages = new scala.collection.mutable.ListBuffer[String]()
 
       def receive = {
@@ -36,25 +36,25 @@ object ActorMetricsSpec {
       }
     }
 
-    class ExceptionThrowingTestActor(val armoury: RootArmoury) extends Actor with InstrumentedActor {
+    class ExceptionThrowingTestActor(val armoury: Armoury) extends Actor with InstrumentedActor {
       def receive = {
         case _ => throw new RuntimeException()
       }
     }
 
 
-    class CounterTestActor(rootBuilder: RootArmoury) extends TestActor(rootBuilder) with CountReceives {
+    class CounterTestActor(armoury: Armoury) extends TestActor(armoury) with CountReceives {
       override def receiveCounterName = "receiveCounter"
     }
 
-    class TimerTestActor(rootBuilder: RootArmoury) extends TestActor(rootBuilder) with TimeReceives
+    class TimerTestActor(armoury: Armoury) extends TestActor(armoury) with TimeReceives
 
-    class ExceptionMeterTestActor(rootBuilder: RootArmoury)
-      extends ExceptionThrowingTestActor(rootBuilder)
+    class ExceptionMeterTestActor(armoury: Armoury)
+      extends ExceptionThrowingTestActor(armoury)
       with MeterReceiveExceptions
 
-    class ComposedActor(rootBuilder: RootArmoury)
-      extends TestActor(rootBuilder)
+    class ComposedActor(armoury: Armoury)
+      extends TestActor(armoury)
       with CountReceives
       with TimeReceives
       with MeterReceiveExceptions
@@ -80,17 +80,16 @@ class ActorMetricsSpec extends FlatSpec {
   }
 
   "A timer actor" should "time a message processing" in {
-    val builder = new MockArmoury
-    val ref = TestActorRef(new TimerTestActor(builder))
+    val armoury = new MockArmoury
+    val ref = TestActorRef(new TimerTestActor(armoury))
     ref ! "test"
-    println(builder.describe)
     val receiveTimer = ref.underlyingActor.timer
     assert(receiveTimer.count === 1)
   }
 
   "A exception meter actor" should "meter thrown exceptions" in {
-    val builder = new MockArmoury
-    val ref = TestActorRef(new ExceptionMeterTestActor(builder))
+    val armoury = new MockArmoury
+    val ref = TestActorRef(new ExceptionMeterTestActor(armoury))
     intercept[RuntimeException] { ref.receive("test") }
 
     val receiveExceptionMeter = ref.underlyingActor.meter
@@ -98,8 +97,8 @@ class ActorMetricsSpec extends FlatSpec {
   }
 
   "A composed actor" should "count and time processing of messages" in {
-    val builder = new MockArmoury
-    val ref = TestActorRef(new ComposedActor(builder))
+    val armoury = new MockArmoury
+    val ref = TestActorRef(new ComposedActor(armoury))
     ref ! "test"
 
     val receiveTimer = ref.underlyingActor.timer

@@ -16,6 +16,7 @@
 
 package imperial.measures
 
+import imperial.wrappers.codahale.CodaHaleBackedGauge
 import org.junit.runner.RunWith
 import org.mockito.Mockito.when
 import org.scalatest.Matchers._
@@ -27,7 +28,7 @@ import org.scalatest.mock.MockitoSugar._
 class GaugeSpec extends FunSpec with OneInstancePerTest {
   describe("A gauge") {
     val metric = mock[com.codahale.metrics.Gauge[Int]]
-    val gauge = new GaugeWrapper(metric)
+    val gauge = new CodaHaleBackedGauge(metric)
     
     it("invokes underlying function for sugar factory") {
       val sugared = Gauge({ 1 })

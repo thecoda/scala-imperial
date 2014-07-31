@@ -2,6 +2,7 @@ package imperial
 
 import scala.language.implicitConversions
 
+//TODO: Wrap these
 import com.codahale.metrics.health.HealthCheck.Result
 import com.codahale.metrics.health.HealthCheck
 

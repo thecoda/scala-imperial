@@ -17,6 +17,8 @@
 package imperial
 package mixins
 
+import imperial.wrappers.codahale.CodaHaleBackedArmoury
+
 import scala.language.implicitConversions
 
 import com.codahale.metrics.health.HealthCheck.Result
@@ -145,7 +147,7 @@ private trait SimpleChecker {
 
 private class CheckOwner() extends Instrumented {
   val healthcheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
-  def armoury = Armoury.wrap(null, healthcheckRegistry) prefixedWith getClass
+  def armoury =  new CodaHaleBackedArmoury(null, healthcheckRegistry) prefixedWith getClass
 
 
 

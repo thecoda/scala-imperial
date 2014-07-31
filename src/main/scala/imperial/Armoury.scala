@@ -16,7 +16,6 @@
 
 package imperial
 
-import com.codahale.{metrics => ch}
 import imperial.measures._
 import com.codahale.metrics.health.HealthCheck
 
@@ -72,33 +71,7 @@ class NestedArmoury(val parentBuilder: Armoury, val baseName: QualifiedName) ext
   def healthCheck(name: String, unhealthyMessage: String = "Health check failed")
                  (checker: => HealthCheckMagnet): HealthCheck
                  = parentBuilder.healthCheck(deriveName(name), unhealthyMessage)(checker)
-
-
 }
 
-object Armoury {
-  def wrap(metricRegistry: ch.MetricRegistry, healthcheckRegistry: ch.health.HealthCheckRegistry): RootArmoury =
-    new WrappedArmoury(metricRegistry, healthcheckRegistry)
-}
 
-class WrappedArmoury(
-  val metricRegistry: ch.MetricRegistry,
-  val healthcheckRegistry: ch.health.HealthCheckRegistry
-) extends RootArmoury {
 
-  def gauge[A](name: String)(f: => A): Gauge[A] =
-    new GaugeWrapper[A](metricRegistry.register(name, new ch.Gauge[A] { def getValue: A = f }))
-
-  def counter(name: String): Counter = new CounterWrapper(metricRegistry.counter(name))
-  def histogram(name: String): Histogram = new HistogramWrapper(metricRegistry.histogram(name))
-  def meter(name: String): Meter = new MeterWrapper(metricRegistry.meter(name))
-  def timer(name: String): Timer = new TimerWrapper(metricRegistry.timer(name))
-
-  def healthCheck(name: String, unhealthyMessage: String = "Health check failed")
-                 (checker: => HealthCheckMagnet): HealthCheck =
-  {
-    val check = checker(unhealthyMessage)
-    healthcheckRegistry.register(name, check)
-    check
-  }
-}
