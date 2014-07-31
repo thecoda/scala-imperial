@@ -143,9 +143,9 @@ private trait SimpleChecker {
   def check(): Boolean
 }
 
-private class CheckOwner() extends ImperialInstrumented {
+private class CheckOwner() extends Instrumented {
   val healthcheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
-  def armoury = Armoury.wrap(null, healthcheckRegistry)
+  def armoury = Armoury.wrap(null, healthcheckRegistry) prefixedWith getClass
 
 
 
@@ -153,28 +153,28 @@ private class CheckOwner() extends ImperialInstrumented {
   // we would need to repeat the magnet pattern right here in a test class :(
 
   def createBooleanHealthCheck(checker: => Boolean): HealthCheck =
-    metrics.healthCheck("test", "FAIL") { checker }
+    armoury.healthCheck("test", "FAIL") { checker }
 
   def createImplicitBooleanHealthCheck(checker: => Outcome): HealthCheck =
-    metrics.healthCheck("test", "FAIL") { checker }
+    armoury.healthCheck("test", "FAIL") { checker }
 
   def createTryHealthCheck(checker: => Try[_]): HealthCheck =
-    metrics.healthCheck("test", "FAIL") { checker }
+    armoury.healthCheck("test", "FAIL") { checker }
 
   def createEitherHealthCheck(checker: => Either[_, _]): HealthCheck =
-    metrics.healthCheck("test", "FAIL") { checker }
+    armoury.healthCheck("test", "FAIL") { checker }
 
   def createResultHealthCheck(checker: => Result): HealthCheck =
-    metrics.healthCheck("test", "FAIL") { checker }
+    armoury.healthCheck("test", "FAIL") { checker }
 
   def createThrowingHealthCheck(checkerFailure: => Throwable): HealthCheck =
-    metrics.healthCheck("test", "FAIL") {
+    armoury.healthCheck("test", "FAIL") {
       def alwaysFails(): Boolean = throw checkerFailure
       alwaysFails()
     }
 
   def createCheckerHealthCheck(checker: => SimpleChecker): HealthCheck =
-    metrics.healthCheck("test", "FAIL") { checker.check() }
+    armoury.healthCheck("test", "FAIL") { checker.check() }
 }
 
 /** Used to test implicit conversion to boolean. */

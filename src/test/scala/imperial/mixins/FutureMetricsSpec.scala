@@ -33,7 +33,7 @@ class FutureMetricsSpec extends FlatSpec {
     def reportFailure(t: Throwable): Unit = throw t
   }
 
-  trait WithMockMetrics extends FutureMetrics with ImperialInstrumented {
+  trait WithMockMetrics extends FutureMetrics with Instrumented {
     val armoury = new MockArmoury
   }
 
@@ -43,7 +43,7 @@ class FutureMetricsSpec extends FlatSpec {
       10
     }
     val result = Await.result(f, 300.millis)
-    assert(metrics.timer("test").count === 1)
+    assert(armoury.timer("test").count === 1)
     result should be (10)
   }
 
@@ -55,7 +55,7 @@ class FutureMetricsSpec extends FlatSpec {
     p.success("test")
     val result = Await.result(f, 50.millis)
     result should be ("test")
-    assert(metrics.timer("test").count === 1)
+    assert(armoury.timer("test").count === 1)
 //      verify(mockTimerContext).stop()
   }
 

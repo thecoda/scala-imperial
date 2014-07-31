@@ -21,13 +21,9 @@ import akka.enhancement.PublicAroundReceive
 import imperial.measures.{Timer, Meter, Counter}
 import imperial.QualifiedName
 
-trait ImperialInstrumentedActor extends Actor with PublicAroundReceive with ImperialInstrumented {
-  private[this] lazy val actorPathBaseName = QualifiedName(getClass)
-
-  private[this] lazy val actorPathedMetricBuilder = armoury prefixedWith actorPathBaseName
-
+trait InstrumentedActor extends Actor with PublicAroundReceive with Instrumented {
   //Dump the class name into a gauge, as we're naming off the actor path
-  metrics.gauge("classname"){qualifiedClassBaseName.name}
+  armoury.gauge("classname"){ QualifiedName(getClass) }
 }
 
 /**
@@ -53,10 +49,10 @@ trait ImperialInstrumentedActor extends Actor with PublicAroundReceive with Impe
  * }
  * }}}
  */
-trait CountReceives extends ImperialInstrumentedActor {
+trait CountReceives extends InstrumentedActor {
 
   def receiveCounterName: String = QualifiedName(getClass).append("receiveCounter").name
-  lazy val counter: Counter = metrics.counter(receiveCounterName)
+  lazy val counter: Counter = armoury.counter(receiveCounterName)
 
   override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = {
     super.publicAroundReceive(receive, msg)
@@ -87,10 +83,10 @@ trait CountReceives extends ImperialInstrumentedActor {
  * }
  * }}}
  */
-trait TimeReceives extends ImperialInstrumentedActor {
+trait TimeReceives extends InstrumentedActor {
 
   def receiveTimerName: String = QualifiedName(getClass).append("receiveTimer").name
-  lazy val timer: Timer = metrics.timer(receiveTimerName)
+  lazy val timer: Timer = armoury.timer(receiveTimerName)
 
   override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = timer.time(
     super.publicAroundReceive(receive, msg)
@@ -120,10 +116,10 @@ trait TimeReceives extends ImperialInstrumentedActor {
  * }
  * }}}
  */
-trait MeterReceiveExceptions extends ImperialInstrumentedActor {
+trait MeterReceiveExceptions extends InstrumentedActor {
 
   def receiveExceptionMeterName: String = QualifiedName(getClass).append("receiveExceptionMeter").name
-  lazy val meter: Meter = metrics.meter(receiveExceptionMeterName)
+  lazy val meter: Meter = armoury.meter(receiveExceptionMeterName)
 
   override def publicAroundReceive(receive: Actor.Receive, msg: Any): Unit = {
     meter.exceptionMarker(super.publicAroundReceive(receive, msg))

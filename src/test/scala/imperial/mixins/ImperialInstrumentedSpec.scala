@@ -36,11 +36,11 @@ class ImperialInstrumentedSpec extends FunSpec with OneInstancePerTest {
     }
   }
 
-  private class MetricOwner() extends ImperialInstrumented {
+  private class MetricOwner() extends Instrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
-    val armoury = Armoury.wrap(metricRegistry, null)
+    val armoury = Armoury.wrap(metricRegistry, null) prefixedWith getClass
 
-    def createCounter(): Counter = metrics.counter("cnt")
+    def createCounter(): Counter = armoury.counter("cnt")
   }
 
 }

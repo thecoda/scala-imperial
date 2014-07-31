@@ -28,7 +28,7 @@ object ActorMetricsSpec {
 
   object TestFixture {
 
-    class TestActor(val armoury: RootArmoury) extends Actor with ImperialInstrumentedActor {
+    class TestActor(val armoury: RootArmoury) extends Actor with InstrumentedActor {
       val messages = new scala.collection.mutable.ListBuffer[String]()
 
       def receive = {
@@ -36,7 +36,7 @@ object ActorMetricsSpec {
       }
     }
 
-    class ExceptionThrowingTestActor(val armoury: RootArmoury) extends Actor with ImperialInstrumentedActor {
+    class ExceptionThrowingTestActor(val armoury: RootArmoury) extends Actor with InstrumentedActor {
       def receive = {
         case _ => throw new RuntimeException()
       }
@@ -71,12 +71,12 @@ class ActorMetricsSpec extends FlatSpec {
   implicit val system = ActorSystem()
 
   "A counter actor" should "increments counter on new messages" in {
-    val builder = new MockArmoury
-    val ref = TestActorRef(new CounterTestActor(builder))
+    val armoury = new MockArmoury
+    val ref = TestActorRef(new CounterTestActor(armoury))
 
     ref.underlyingActor.receive should not be (null)
     ref ! "test"
-    assert(ref.underlyingActor.metrics.counter("receiveCounter").count === 1)
+    assert(ref.underlyingActor.armoury.counter("receiveCounter").count === 1)
   }
 
   "A timer actor" should "time a message processing" in {

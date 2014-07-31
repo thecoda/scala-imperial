@@ -40,6 +40,7 @@ object QualifiedName {
     if(withReplacements.endsWith(".")) withReplacements.init else withReplacements
   }
 
+
   /**
    * Directly create a metrics name from a [[String]].
    *

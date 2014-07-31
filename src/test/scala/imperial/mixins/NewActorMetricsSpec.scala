@@ -12,7 +12,7 @@ object NewActorMetricsSpec {
 
   object TestFixture {
 
-    class TestActor(val armoury: RootArmoury) extends Actor with ImperialInstrumentedActor {
+    class TestActor(val armoury: RootArmoury) extends Actor with InstrumentedActor {
       val messages = new scala.collection.mutable.ListBuffer[String]()
 
       def receive = {
@@ -20,7 +20,7 @@ object NewActorMetricsSpec {
       }
     }
 
-    class ExceptionThrowingTestActor(val armoury: RootArmoury) extends Actor with ImperialInstrumentedActor {
+    class ExceptionThrowingTestActor(val armoury: RootArmoury) extends Actor with InstrumentedActor {
       def receive = {
         case _ => throw new RuntimeException()
       }
@@ -62,7 +62,7 @@ class NewActorMetricsSpec extends FlatSpec {
 
     ref.underlyingActor.receive should not be (null)
     ref ! "test"
-    assert(ref.underlyingActor.metrics.counter("receiveCounter").count === 1)
+    assert(ref.underlyingActor.armoury.counter("receiveCounter").count === 1)
   }
 
   "A timer actor" should "time a message processing" in {

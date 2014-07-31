@@ -22,23 +22,21 @@ import org.scalatest.Matchers._
 import org.scalatest.{FunSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
 import imperial.measures._
-import imperial.mixins.ImperialInstrumented
+import imperial.mixins.Instrumented
 
 @RunWith(classOf[JUnitRunner])
 class MetricBuilderSpec extends FunSpec with OneInstancePerTest {
 
   private val testMetricRegistry = new MetricRegistry()
 
-  trait Instrumented extends ImperialInstrumented {
-    val armoury = Armoury.wrap(testMetricRegistry, null)
-  }
-
   class UnderTest extends Instrumented {
-    val timer: Timer = metrics.timer("10ms")
-    val gauge: Gauge[Int] = metrics.gauge("the answer")(value)
-    val counter: Counter = metrics.counter("1..2..3..4")
-    val histogram: Histogram = metrics.histogram("histo")
-    val meter: Meter = metrics.meter("meter.testscope")
+    val armoury = Armoury.wrap(testMetricRegistry, null)
+
+    val timer     : Timer      = armoury.timer("10ms")
+    val gauge     : Gauge[Int] = armoury.gauge("the answer")(value)
+    val counter   : Counter    = armoury.counter("1..2..3..4")
+    val histogram : Histogram  = armoury.histogram("histo")
+    val meter     : Meter      = armoury.meter("meter.testscope")
 
     def waitFor100Ms() {
       timer.time {

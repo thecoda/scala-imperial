@@ -5,7 +5,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
  * Provides timing of future executions.
  */
-trait FutureMetrics { self: ImperialInstrumented =>
+trait FutureMetrics { self: Instrumented =>
   /**
    * Creates a future that executes the given `action` and times it.
    *
@@ -36,7 +36,7 @@ trait FutureMetrics { self: ImperialInstrumented =>
    * }}}
    */
   def timed[A](metricName: String)(action: => A)(implicit context: ExecutionContext): Future[A] = {
-    val timer = metrics.timer(metricName)
+    val timer = armoury.timer(metricName)
     Future(timer.time(action))
   }
 
@@ -75,7 +75,7 @@ trait FutureMetrics { self: ImperialInstrumented =>
    * }}}
    */
   def timing[A](metricName: String)(future: => Future[A])(implicit context: ExecutionContext): Future[A] = {
-    val timer = metrics.timer(metricName)
+    val timer = armoury.timer(metricName)
     val ctx = timer.timerContext
     future.onComplete(_ => ctx.stop())
     future

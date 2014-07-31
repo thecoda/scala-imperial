@@ -41,16 +41,16 @@ class CombinedBuilderSpec extends FunSpec with OneInstancePerTest {
     }
   }
 
-  private class CombinedBuilder() extends ImperialInstrumented {
+  private class CombinedBuilder() extends Instrumented {
     val metricRegistry: MetricRegistry = mock[MetricRegistry]
     val healthCheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
 
-    val armoury = Armoury.wrap(metricRegistry, healthCheckRegistry)
+    val armoury = Armoury.wrap(metricRegistry, healthCheckRegistry) prefixedWith getClass
 
-    def createCounter(): Counter = metrics.counter("cnt")
+    def createCounter(): Counter = armoury.counter("cnt")
 
     def createBooleanHealthCheck(checker: Boolean): HealthCheck =
-      metrics.healthCheck("test", "FAIL") { checker }
+      armoury.healthCheck("test", "FAIL") { checker }
   }
 
 }
