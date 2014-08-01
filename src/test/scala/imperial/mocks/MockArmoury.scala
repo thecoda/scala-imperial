@@ -3,7 +3,7 @@ package mocks
 
 import collection.{mutable => mut}
 import imperial.measures.Histogram
-import com.codahale.metrics.health.HealthCheck
+import imperial.health.HealthCheckable
 
 class MockArmoury extends RootArmoury  {
   val metricMap: mut.Map[String, Any] = mut.Map.empty
@@ -19,8 +19,10 @@ class MockArmoury extends RootArmoury  {
   override def counter(name: String)  : MockCounter          = getOrFetch(name){ new MockCounter }
   override def histogram(name: String): Histogram            = ???
 
-  def healthCheck(name: String, unhealthyMessage: String = "Health check failed")
-                 (checker: => HealthCheckMagnet): HealthCheck
-                 = ???
+  def healthCheck[T]
+    (name: String, unhealthyMessage: String = "Health check failed")
+    (payload: => T)
+    (implicit checkable: HealthCheckable[T])
+  : HealthCheck = ???
 
 }

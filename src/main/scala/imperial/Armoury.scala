@@ -17,6 +17,7 @@
 package imperial
 
 import imperial.measures._
+import imperial.health.HealthCheckable
 
 /** Builds and registering metrics. */
 trait Armoury {
@@ -38,7 +39,12 @@ trait Armoury {
   /** Creates a new timer metric. */
   def timer(name: String): Timer
 
-  def healthCheck(name: String, unhealthyMessage: String)(checker: => HealthCheckMagnet): HealthCheck
+  /** Creates a new healthCheck. */
+  def healthCheck[T]
+    (name: String, unhealthyMessage: String = "Health check failed")
+    (payload: => T)
+    (implicit checkable: HealthCheckable[T])
+  : HealthCheck
 
   def rootBuilder: Armoury
   def parentBuilder: Armoury
@@ -67,9 +73,11 @@ class NestedArmoury(val parentBuilder: Armoury, val baseName: QualifiedName) ext
   def meter(name: String): Meter = parentBuilder.meter(deriveName(name))
   def timer(name: String): Timer = parentBuilder.timer(deriveName(name))
 
-  def healthCheck(name: String, unhealthyMessage: String = "Health check failed")
-                 (checker: => HealthCheckMagnet): HealthCheck
-                 = parentBuilder.healthCheck(deriveName(name), unhealthyMessage)(checker)
+  def healthCheck[T]
+  (name: String, unhealthyMessage: String = "Health check failed")
+  (payload: => T)
+  (implicit checkable: HealthCheckable[T])
+  : HealthCheck = parentBuilder.healthCheck(deriveName(name), unhealthyMessage)(payload)
 }
 
 

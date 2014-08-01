@@ -19,8 +19,6 @@ package mixins
 
 import imperial.wrappers.codahale.CodaHaleBackedArmoury
 
-import scala.language.implicitConversions
-
 import com.codahale.metrics.health.HealthCheck.Result
 import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
 import org.junit.runner.RunWith
@@ -31,20 +29,31 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import scala.util.Try
 
+import imperial.health.HealthCheckable
+import scala.util.control.NoStackTrace
+
 
 @RunWith(classOf[JUnitRunner])
 class HealthCheckSpec extends FlatSpec {
 
+  implicit object outcomeIsCheckable extends HealthCheckable[Outcome] {
+    def mkHealthCheck(unhealthyMessage: String, outcome: => Outcome): HealthCheck =
+      HealthCheckable.booleanIsCheckable.mkHealthCheck(unhealthyMessage, outcome == SuccessOutcome)
+  }
+
+  val sampleException: IllegalArgumentException = new IllegalArgumentException with NoStackTrace
+
+
   "The healthCheck factory method" should "register the created checker" in {
     val checkOwner = newCheckOwner
-    val check = checkOwner.createBooleanHealthCheck { true }
+    val check = checkOwner.mkCheck{ true }
     verify(checkOwner.healthcheckRegistry).register("imperial.mixins.CheckOwner.test", check)
   }
 
   it should "build health checks that call the provided checker" in {
     val mockChecker = mock[SimpleChecker]
     when(mockChecker.check()).thenReturn(true, false, true, false)
-    val check = newCheckOwner.createCheckerHealthCheck(mockChecker)
+    val check = newCheckOwner.mkCheck(mockChecker.check())
     check.execute() should be (Result.healthy())
     check.execute() should be (Result.unhealthy("FAIL"))
     check.execute() should be (Result.healthy())
@@ -52,81 +61,69 @@ class HealthCheckSpec extends FlatSpec {
   }
 
   it should "support a Boolean checker returning true" in {
-    val check = newCheckOwner.createBooleanHealthCheck { true }
-    check.execute() should be (Result.healthy())
+    runCheck { true } should be (Result.healthy())
   }
 
   it should "support a Boolean checker returning false" in {
-    val check = newCheckOwner.createBooleanHealthCheck { false }
-    check.execute() should be (Result.unhealthy("FAIL"))
+    runCheck { false } should be (Result.unhealthy("FAIL"))
   }
 
-  it should "support a Boolean checker returning true implicitly" in {
-    val check = newCheckOwner.createImplicitBooleanHealthCheck { Success }
-    check.execute() should be (Result.healthy())
+  it should "support a locally-defined checkable delegating to boolean true" in {
+    runCheck { SuccessOutcome } should be (Result.healthy())
   }
 
-  it should "support a Boolean checker returning false implicitly" in {
-    val check = newCheckOwner.createImplicitBooleanHealthCheck { Failure }
-    check.execute() should be (Result.unhealthy("FAIL"))
+  it should "support a locally-defined checkable delegating to boolean false" in {
+    runCheck { FailureOutcome } should be (Result.unhealthy("FAIL"))
   }
 
   it should "support a Try checker returning Success[Long]" in {
-    val check = newCheckOwner.createTryHealthCheck { Try(123L) }
-    check.execute() should be (Result.healthy("123"))
+    runCheck { Try(123L) } should be (Result.healthy("123"))
   }
 
   it should "support a Try checker returning Failure" in {
-    val exception: IllegalArgumentException = new IllegalArgumentException()
-    val check = newCheckOwner.createTryHealthCheck { Try(throw exception) }
-    check.execute() should be (Result.unhealthy(exception))
+    runCheck { Try(throw sampleException) } should be (Result.unhealthy(sampleException))
   }
 
   it should "support an Either checker returning Right[Long]" in {
-    val check = newCheckOwner.createEitherHealthCheck { Right(123L) }
-    check.execute() should be (Result.healthy("123"))
+    runCheck { Right(123L) } should be (Result.healthy("123"))
   }
 
   it should "support an Either checker returning Left[Boolean]" in {
-    val check = newCheckOwner.createEitherHealthCheck { Left(true) }
-    check.execute() should be (Result.unhealthy("true"))
+    runCheck { Left(true) } should be (Result.unhealthy("true"))
   }
 
   it should "support an Either checker returning Right[String]" in {
-    val check = newCheckOwner.createEitherHealthCheck { Right("I am alright") }
-    check.execute() should be (Result.healthy("I am alright"))
+    runCheck { Right("I am alright") } should be (Result.healthy("I am alright"))
   }
 
   it should "support an Either checker returning Left[String]" in {
-    val check = newCheckOwner.createEitherHealthCheck { Left("Oops, I am not fine") }
-    check.execute() should be (Result.unhealthy("Oops, I am not fine"))
+    runCheck { Left("Oops, I am not fine") } should be (Result.unhealthy("Oops, I am not fine"))
   }
 
   it should "support an Either checker returning Left[Throwable]" in {
-    val exception: IllegalArgumentException = new IllegalArgumentException()
-    val check = newCheckOwner.createEitherHealthCheck { Left(exception) }
-    check.execute() should be (Result.unhealthy(exception))
+    runCheck { Left(sampleException) } should be (Result.unhealthy(sampleException))
   }
 
   it should "support a Result checker returning Result unchanged" in {
     val result = Result.healthy()
-    val check = newCheckOwner.createResultHealthCheck { result }
-    check.execute() should be theSameInstanceAs (result)
+    val check = runCheck { result }
+    check should be theSameInstanceAs (result)
   }
 
   it should "support a checker throwing an exception" in {
-    val exception: IllegalArgumentException = new IllegalArgumentException()
-    val check = newCheckOwner.createThrowingHealthCheck(exception)
-    check.execute() should be (Result.unhealthy(exception))
+    runCheck {
+      def alwaysFails(): Boolean = throw sampleException
+      alwaysFails()
+    } should be (Result.unhealthy(sampleException))
   }
 
   it should "support an inline Either checker alternating success and failure" in {
     // Tests an inline block because of https://github.com/erikvanoosten/metrics-scala/issues/42 and
     // https://issues.scala-lang.org/browse/SI-3237
-    var counter = 0
-    val check = newCheckOwner.createEitherHealthCheck {
-      counter += 1
-      counter match {
+
+    val counter = Iterator from 1
+    val check = newCheckOwner.mkCheck {
+      counter.next() match {
         case i if i % 2 == 0 => Right(i)
         case i => Left(i)
       }
@@ -136,6 +133,8 @@ class HealthCheckSpec extends FlatSpec {
   }
 
   private val newCheckOwner = new CheckOwner()
+  def runCheck[T: HealthCheckable](payload: => T): Result = newCheckOwner.mkCheck(payload).execute()
+
 
 }
 
@@ -147,45 +146,12 @@ private class CheckOwner() extends Instrumented {
   val healthcheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
   def armoury =  new CodaHaleBackedArmoury(null, healthcheckRegistry) prefixedWith getClass
 
-
-
-  // Unfortunately we need a helper method for each supported type. If we wanted a single helper method,
-  // we would need to repeat the magnet pattern right here in a test class :(
-
-  def createBooleanHealthCheck(checker: => Boolean): HealthCheck =
-    armoury.healthCheck("test", "FAIL") { checker }
-
-  def createImplicitBooleanHealthCheck(checker: => Outcome): HealthCheck =
-    armoury.healthCheck("test", "FAIL") { checker }
-
-  def createTryHealthCheck(checker: => Try[_]): HealthCheck =
-    armoury.healthCheck("test", "FAIL") { checker }
-
-  def createEitherHealthCheck(checker: => Either[_, _]): HealthCheck =
-    armoury.healthCheck("test", "FAIL") { checker }
-
-  def createResultHealthCheck(checker: => Result): HealthCheck =
-    armoury.healthCheck("test", "FAIL") { checker }
-
-  def createThrowingHealthCheck(checkerFailure: => Throwable): HealthCheck =
-    armoury.healthCheck("test", "FAIL") {
-      def alwaysFails(): Boolean = throw checkerFailure
-      alwaysFails()
-    }
-
-  def createCheckerHealthCheck(checker: => SimpleChecker): HealthCheck =
-    armoury.healthCheck("test", "FAIL") { checker.check() }
+  /** Simple helper allowing checks with a default name/message to be created outside the object */
+  def mkCheck[T: HealthCheckable](payload: => T): HealthCheck = armoury.healthCheck("test", "FAIL") { payload }
 }
 
 /** Used to test implicit conversion to boolean. */
-private sealed trait Outcome
-private case object Success extends Outcome
-private case object Failure extends Outcome
+sealed trait Outcome
+case object SuccessOutcome extends Outcome
+case object FailureOutcome extends Outcome
 
-/** Implicitly convertible to [[scala.Boolean]]. */
-private object Outcome {
-  implicit def outcome2Boolean(outcome: Outcome): Boolean = outcome match {
-    case Success => true
-    case Failure => false
-  }
-}

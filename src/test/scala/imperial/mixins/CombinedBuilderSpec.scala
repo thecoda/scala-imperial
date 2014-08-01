@@ -17,7 +17,7 @@
 package imperial.mixins
 
 import com.codahale.metrics.MetricRegistry
-import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
+import com.codahale.metrics.health.HealthCheckRegistry
 import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
@@ -36,7 +36,7 @@ class CombinedBuilderSpec extends FlatSpec with OneInstancePerTest {
     combinedBuilder.createCounter()
     verify(combinedBuilder.metricRegistry).counter("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.cnt")
 
-    val check = combinedBuilder.createBooleanHealthCheck { true }
+    val check = combinedBuilder.armoury.healthCheck("test", "FAIL") { true }
     verify(combinedBuilder.healthCheckRegistry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
   }
 
@@ -47,9 +47,6 @@ class CombinedBuilderSpec extends FlatSpec with OneInstancePerTest {
     val armoury: Armoury =  new CodaHaleBackedArmoury(metricRegistry, healthCheckRegistry) prefixedWith getClass
 
     def createCounter(): Counter = armoury.counter("cnt")
-
-    def createBooleanHealthCheck(checker: Boolean): HealthCheck =
-      armoury.healthCheck("test", "FAIL") { checker }
   }
 
 }
