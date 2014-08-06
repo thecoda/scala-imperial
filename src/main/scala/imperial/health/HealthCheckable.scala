@@ -1,19 +1,17 @@
 package imperial.health
 
-import com.codahale.metrics.health.HealthCheck
-import com.codahale.metrics.health.HealthCheck.Result
+import HealthCheck.Result
 import scala.util.{Failure, Success, Try}
 
 trait HealthCheckable[-T] {
-  def mkHealthCheck(unhealthyMessage: String, checker: => T): HealthCheck
+  def mkCheck(unhealthyMessage: String, checker: => T): () => Result
 }
 
 object HealthCheckable {
   implicit object booleanIsCheckable extends HealthCheckable[Boolean] {
-    def mkHealthCheck(unhealthyMessage: String, checker: => Boolean) = new HealthCheck() {
-      protected def check: Result =
-        if (checker) Result.healthy()
-        else Result.unhealthy(unhealthyMessage)
+    def mkCheck(unhealthyMessage: String, checker: => Boolean) = () => {
+      if (checker) Result.healthy
+      else Result.unhealthy(unhealthyMessage)
     }
   }
 
@@ -21,11 +19,9 @@ object HealthCheckable {
    * Magnet for checkers returning an [[scala.util.Try]].
    */
   implicit object tryIsCheckable extends HealthCheckable[Try[_]] {
-    def mkHealthCheck(unhealthyMessage: String, checker: => Try[_]) = new HealthCheck() {
-      protected def check: Result = checker match {
-        case Success(m) => Result.healthy(m.toString)
-        case Failure(t) => Result.unhealthy(t)
-      }
+    def mkCheck(unhealthyMessage: String, checker: => Try[_]) = () => checker match {
+      case Success(m) => Result.healthy(m.toString)
+      case Failure(t) => Result.unhealthy(t)
     }
   }
 
@@ -33,12 +29,10 @@ object HealthCheckable {
    * Magnet for checkers returning an [[scala.util.Either]].
    */
   implicit object eitherIsCheckable extends HealthCheckable[Either[Any,Any]] {
-    def mkHealthCheck(unhealthyMessage: String, checker: => Either[Any,Any]) = new HealthCheck() {
-      protected def check: Result = checker match {
-        case Right(m) => Result.healthy(m.toString)
-        case Left(t: Throwable) => Result.unhealthy(t)
-        case Left(m) => Result.unhealthy(m.toString)
-      }
+    def mkCheck(unhealthyMessage: String, checker: => Either[Any,Any]) = () => checker match {
+      case Right(m) => Result.healthy(m.toString)
+      case Left(t: Throwable) => Result.unhealthy(t)
+      case Left(m) => Result.unhealthy(m.toString)
     }
   }
 
@@ -46,9 +40,7 @@ object HealthCheckable {
    * Magnet for checkers returning a [[com.codahale.metrics.health.HealthCheck.Result]].
    */
   implicit object resultIsCheckable extends HealthCheckable[Result] {
-    def mkHealthCheck(unhealthyMessage: String, checker: => Result) = new HealthCheck() {
-      protected def check: Result = checker
-    }
+    def mkCheck(unhealthyMessage: String, checker: => Result) = () => checker
   }
 
 

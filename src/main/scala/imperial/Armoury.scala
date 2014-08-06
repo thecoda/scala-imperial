@@ -17,7 +17,7 @@
 package imperial
 
 import imperial.measures._
-import imperial.health.HealthCheckable
+import imperial.health.{HealthCheck, HealthCheckable}
 
 /** Builds and registering metrics. */
 trait Armoury {

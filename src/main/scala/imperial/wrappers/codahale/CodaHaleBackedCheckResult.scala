@@ -2,16 +2,12 @@ package imperial
 package wrappers.codahale
 
 import com.codahale.metrics.health.HealthCheck.{Result => CHResult}
+import imperial.health.HealthCheck
 
-class CodaHaleBackedCheckResult(raw: CHResult) extends CheckResult {
-  def isHealthy: Boolean = raw.isHealthy
-  def message: String = Some(raw.getMessage) getOrElse ""
-  def error: Option[Throwable]  = Some(raw.getError)
-}
 
 object CodaHaleBackedCheckResult {
-  def apply(raw: CHResult) = new CodaHaleBackedCheckResult(raw)
-  val healthy: CheckResult = apply(CHResult.healthy)
+  def apply(raw: CHResult): HealthCheck.Result = HealthCheck.Result(raw.isHealthy, raw.getMessage, Option(raw.getError))
+  val healthy: HealthCheck.Result = apply(CHResult.healthy)
   def healthy(msg: String) = apply(CHResult.healthy(msg))
   def healthy(msg: String, args: String*) = apply(CHResult.healthy(msg, args: _*))
   def unhealthy(msg: String) = apply(CHResult.unhealthy(msg))

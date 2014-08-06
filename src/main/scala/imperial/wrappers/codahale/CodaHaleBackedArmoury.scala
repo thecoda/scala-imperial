@@ -2,9 +2,10 @@ package imperial
 package wrappers.codahale
 
 import com.codahale.{metrics => ch}
-import ch.health.{HealthCheck, HealthCheckRegistry}
+import ch.health.HealthCheckRegistry
 import imperial.measures._
 import imperial.health.HealthCheckable
+import imperial.health.HealthCheck
 
 class CodaHaleBackedArmoury(
   val metricRegistry: ch.MetricRegistry = new ch.MetricRegistry,
@@ -24,9 +25,25 @@ class CodaHaleBackedArmoury(
     (payload: => T)
     (implicit checkable: HealthCheckable[T])
   : HealthCheck = {
-    val check = checkable.mkHealthCheck(unhealthyMessage, payload)
-    healthcheckRegistry.register(name, check)
+    val check = new HealthCheck {
+      val check = checkable.mkCheck(unhealthyMessage, payload)
+    }
+    healthcheckRegistry.register(name, wrapHealthCheck(check))
     check
   }
 
+  private[this] def wrapHealthCheck(native: HealthCheck): ch.health.HealthCheck = {
+    import ch.health.{HealthCheck => HC}
+    import imperial.health.HealthCheck.Result
+
+    new HC {
+      override def check(): HC.Result = {
+        val r = native.check()
+        if(r == Result.healthy)                    HC.Result.healthy()
+        else if (r.isHealthy && r.message.isEmpty) HC.Result.healthy()
+        else if (r.isHealthy)                      HC.Result.healthy(r.message)
+        else                                       HC.Result.unhealthy(r.message)
+      }
+    }
+  }
 }

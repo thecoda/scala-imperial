@@ -13,6 +13,7 @@ class MockTimerContext(timer: Timer) extends TimerContext {
     elapsed
   }
 }
+
 class MockTimer extends Timer {
   def timerContext: TimerContext = new MockTimerContext(this)
 

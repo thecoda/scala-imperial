@@ -3,7 +3,7 @@ package mocks
 
 import collection.{mutable => mut}
 import imperial.measures.Histogram
-import imperial.health.HealthCheckable
+import imperial.health.{HealthCheck, HealthCheckable}
 
 class MockArmoury extends RootArmoury  {
   val metricMap: mut.Map[String, Any] = mut.Map.empty

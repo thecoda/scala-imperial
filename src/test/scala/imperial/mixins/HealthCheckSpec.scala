@@ -17,28 +17,46 @@
 package imperial
 package mixins
 
-import imperial.wrappers.codahale.CodaHaleBackedArmoury
-
-import com.codahale.metrics.health.HealthCheck.Result
-import com.codahale.metrics.health.{HealthCheck, HealthCheckRegistry}
 import org.junit.runner.RunWith
 import org.mockito.Mockito.{verify, when}
+import org.mockito.Matchers.{eq => meq, any}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.mock.MockitoSugar._
 import scala.util.Try
 
-import imperial.health.HealthCheckable
+import imperial.health.{HealthCheck, HealthCheckable}
+import HealthCheck.Result
 import scala.util.control.NoStackTrace
+
+object HealthCheckSpec {
+  private trait SimpleChecker { def check(): Boolean }
+
+  private class CheckOwner() extends mocks.MockitoInstrumented {
+    /** Simple helper allowing checks with a default name/message to be created outside the object */
+    def mkCheck[T: HealthCheckable](payload: => T): HealthCheck = armoury.healthCheck("test", "FAIL") {
+      payload
+    }
+  }
+
+  /** Used to test implicit conversion to boolean. */
+  sealed trait Outcome
+  case object SuccessOutcome extends Outcome
+  case object FailureOutcome extends Outcome
+}
 
 
 @RunWith(classOf[JUnitRunner])
 class HealthCheckSpec extends FlatSpec {
 
+  import HealthCheckSpec._
+
   implicit object outcomeIsCheckable extends HealthCheckable[Outcome] {
-    def mkHealthCheck(unhealthyMessage: String, outcome: => Outcome): HealthCheck =
-      HealthCheckable.booleanIsCheckable.mkHealthCheck(unhealthyMessage, outcome == SuccessOutcome)
+    def mkCheck(unhealthyMessage: String, outcome: => Outcome) = () => {
+      if (outcome == SuccessOutcome) Result.healthy
+      else Result.unhealthy(unhealthyMessage)
+    }
   }
 
   val sampleException: IllegalArgumentException = new IllegalArgumentException with NoStackTrace
@@ -47,21 +65,21 @@ class HealthCheckSpec extends FlatSpec {
   "The healthCheck factory method" should "register the created checker" in {
     val checkOwner = newCheckOwner
     val check = checkOwner.mkCheck{ true }
-    verify(checkOwner.healthcheckRegistry).register("imperial.mixins.CheckOwner.test", check)
+    verify(checkOwner.healthCheckRegistry).register(meq("imperial.mixins.HealthCheckSpec.CheckOwner.test"), any[com.codahale.metrics.health.HealthCheck])
   }
 
   it should "build health checks that call the provided checker" in {
     val mockChecker = mock[SimpleChecker]
     when(mockChecker.check()).thenReturn(true, false, true, false)
     val check = newCheckOwner.mkCheck(mockChecker.check())
-    check.execute() should be (Result.healthy())
+    check.execute() should be (Result.healthy)
     check.execute() should be (Result.unhealthy("FAIL"))
-    check.execute() should be (Result.healthy())
+    check.execute() should be (Result.healthy)
     check.execute() should be (Result.unhealthy("FAIL"))
   }
 
   it should "support a Boolean checker returning true" in {
-    runCheck { true } should be (Result.healthy())
+    runCheck { true } should be (Result.healthy)
   }
 
   it should "support a Boolean checker returning false" in {
@@ -69,7 +87,7 @@ class HealthCheckSpec extends FlatSpec {
   }
 
   it should "support a locally-defined checkable delegating to boolean true" in {
-    runCheck { SuccessOutcome } should be (Result.healthy())
+    runCheck { SuccessOutcome } should be (Result.healthy)
   }
 
   it should "support a locally-defined checkable delegating to boolean false" in {
@@ -105,7 +123,7 @@ class HealthCheckSpec extends FlatSpec {
   }
 
   it should "support a Result checker returning Result unchanged" in {
-    val result = Result.healthy()
+    val result = Result.healthy
     val check = runCheck { result }
     check should be theSameInstanceAs (result)
   }
@@ -137,21 +155,4 @@ class HealthCheckSpec extends FlatSpec {
 
 
 }
-
-private trait SimpleChecker {
-  def check(): Boolean
-}
-
-private class CheckOwner() extends Instrumented {
-  val healthcheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
-  def armoury =  new CodaHaleBackedArmoury(null, healthcheckRegistry) prefixedWith getClass
-
-  /** Simple helper allowing checks with a default name/message to be created outside the object */
-  def mkCheck[T: HealthCheckable](payload: => T): HealthCheck = armoury.healthCheck("test", "FAIL") { payload }
-}
-
-/** Used to test implicit conversion to boolean. */
-sealed trait Outcome
-case object SuccessOutcome extends Outcome
-case object FailureOutcome extends Outcome
 

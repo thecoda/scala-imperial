@@ -16,37 +16,24 @@
 
 package imperial.mixins
 
-import com.codahale.metrics.MetricRegistry
-import com.codahale.metrics.health.HealthCheckRegistry
-import imperial.wrappers.codahale.CodaHaleBackedArmoury
 import org.junit.runner.RunWith
 import org.mockito.Mockito.verify
 import org.scalatest.{FlatSpec, OneInstancePerTest}
 import org.scalatest.junit.JUnitRunner
-import org.scalatest.mock.MockitoSugar._
-import imperial.measures.Counter
-import imperial.Armoury
+import org.mockito.Matchers.{eq => meq, any}
 
 @RunWith(classOf[JUnitRunner])
 class CombinedBuilderSpec extends FlatSpec with OneInstancePerTest {
 
   "InstrumentedBuilder combined with CheckedBuilder" should "uses owner class as metric base name" in {
     val combinedBuilder = new CombinedBuilder
-
-    combinedBuilder.createCounter()
     verify(combinedBuilder.metricRegistry).counter("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.cnt")
-
-    val check = combinedBuilder.armoury.healthCheck("test", "FAIL") { true }
-    verify(combinedBuilder.healthCheckRegistry).register("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test", check)
+    verify(combinedBuilder.healthCheckRegistry).register(meq("imperial.mixins.CombinedBuilderSpec.CombinedBuilder.test"), any[com.codahale.metrics.health.HealthCheck]) //combinedBuilder.check)
   }
 
-  private class CombinedBuilder() extends Instrumented {
-    val metricRegistry: MetricRegistry = mock[MetricRegistry]
-    val healthCheckRegistry: HealthCheckRegistry = mock[HealthCheckRegistry]
-
-    val armoury: Armoury =  new CodaHaleBackedArmoury(metricRegistry, healthCheckRegistry) prefixedWith getClass
-
-    def createCounter(): Counter = armoury.counter("cnt")
+  private class CombinedBuilder() extends imperial.mocks.MockitoInstrumented {
+    val counter = armoury.counter("cnt")
+    val check = armoury.healthCheck("test", "FAIL") { true }
   }
 
 }

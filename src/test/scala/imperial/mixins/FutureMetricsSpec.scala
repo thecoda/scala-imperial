@@ -16,7 +16,7 @@
 
 package imperial.mixins
 
-import imperial.mocks.{MockArmoury, MockTimer}
+import imperial.mocks.MockArmoury
 import org.junit.runner.RunWith
 import org.scalatest.Matchers._
 import org.scalatest.FlatSpec

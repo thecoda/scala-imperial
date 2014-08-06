@@ -35,10 +35,7 @@ class ImperialInstrumentedSpec extends FlatSpec with OneInstancePerTest {
     verify(metricOwner.metricRegistry).counter("imperial.mixins.ImperialInstrumentedSpec.MetricOwner.cnt")
   }
 
-  private class MetricOwner() extends Instrumented {
-    val metricRegistry: MetricRegistry = mock[MetricRegistry]
-    val armoury: Armoury = new CodaHaleBackedArmoury(metricRegistry, null) prefixedWith getClass
-
+  private class MetricOwner() extends imperial.mocks.MockitoInstrumented {
     def createCounter(): Counter = armoury.counter("cnt")
   }
 
